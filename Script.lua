@@ -1811,9 +1811,31 @@ end)
 
 getgenv().ToggleInvisibility = setInvisibilityState
 
+        -- Trả lại Camera và độ mờ cho nhân vật
+        if lp.Character then
+            local currentHumanoid = lp.Character:FindFirstChildOfClass("Humanoid")
+            if currentHumanoid and workspace.CurrentCamera then
+                workspace.CurrentCamera.CameraSubject = currentHumanoid
+                lp.Character:SetAttribute("NoHeadLerp", false)
+            end
+
+            for _, part in pairs(lp.Character:GetDescendants()) do
+                if part:IsA("BasePart") and part.Transparency == 0.5 then
+                    part.Transparency = 0
+                end
+            end
+        end
+    end
+end
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    setInvisibilityState(not InvisibilityActive)
+end)
+
+getgenv().ToggleInvisibility = setInvisibilityState
 
 -- =================================================================
--- HỆ THỐNG TÀNG HÌNH (FIX LỖI VĂNG/GIẬT + TƯƠNG THÍCH TELE KILL)
+-- HỆ THỐNG TÀNG HÌNH (FIX LỖI TẮT BẬT LẠI BỊ CHUI ĐẤT & GIẬT LAG)
 -- =================================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -1827,7 +1849,7 @@ local InvisibilityActive = false
 local cachedAnimHumanoid = nil
 local cachedAnimTrack = nil
 
--- Dummy Humanoid phục vụ giữ ổn định Camera
+-- Dummy Humanoid phục vụ giữ mượt Camera
 local InvisibleHumanoid = Instance.new("Humanoid")
 
 -- GIAO DIỆN NÚT ON/OFF
@@ -1854,8 +1876,10 @@ ToggleBtn.Active = true
 ToggleBtn.Draggable = true
 ToggleBtn.Parent = ScreenGui
 
+-- HÀM KHÔI PHỤC VÀ ĐỔI TRẠNG THÁI
 local function setInvisibilityState(state)
     InvisibilityActive = state
+    
     if InvisibilityActive then
         ToggleBtn.Text = "TÀNG HÌNH: ON"
         ToggleBtn.TextColor3 = Color3.fromRGB(60, 255, 60)
@@ -1863,27 +1887,35 @@ local function setInvisibilityState(state)
         ToggleBtn.Text = "TÀNG HÌNH: OFF"
         ToggleBtn.TextColor3 = Color3.fromRGB(255, 60, 60)
         
-        -- Dọn dẹp Animation
+        -- 1. Dọn dẹp Animation hoàn toàn
         if cachedAnimTrack then
             pcall(function()
-                cachedAnimTrack:Stop()
+                cachedAnimTrack:Stop(0)
                 cachedAnimTrack:Destroy()
             end)
             cachedAnimTrack = nil
         end
         cachedAnimHumanoid = nil
         
-        -- Trả lại Camera và độ mờ cho nhân vật
+        -- 2. Trả lại Camera & độ mờ & va chạm mặt đất cho nhân vật
         if lp.Character then
             local currentHumanoid = lp.Character:FindFirstChildOfClass("Humanoid")
-            if currentHumanoid and workspace.CurrentCamera then
-                workspace.CurrentCamera.CameraSubject = currentHumanoid
+            local currentCamera = workspace.CurrentCamera
+            
+            if currentHumanoid and currentCamera then
+                currentCamera.CameraSubject = currentHumanoid
                 lp.Character:SetAttribute("NoHeadLerp", false)
             end
 
             for _, part in pairs(lp.Character:GetDescendants()) do
-                if part:IsA("BasePart") and part.Transparency == 0.5 then
-                    part.Transparency = 0
+                if part:IsA("BasePart") then
+                    if part.Transparency == 0.5 then
+                        part.Transparency = 0
+                    end
+                    -- Bật lại va chạm bình thường khi TẮT
+                    if part.Name ~= "HumanoidRootPart" then
+                        part.CanCollide = true
+                    end
                 end
             end
         end
@@ -1896,7 +1928,7 @@ end)
 
 getgenv().ToggleInvisibility = setInvisibilityState
 
--- VÒNG LẶP XỬ LÝ CHỐNG GIẬT & ANIMATION (CHẠY TRƯỚC KHI TÍNH TOÁN VẬT LÝ)
+-- VÒNG LẶP XỬ LÝ CHỐNG CHUI ĐẤT & ANIMATION
 RunService.Stepped:Connect(function()
     if not InvisibilityActive then return end
 
@@ -1906,10 +1938,24 @@ RunService.Stepped:Connect(function()
 
     if not currentChar or not currentHumanoid or not currentRoot or currentHumanoid.Health <= 0 then return end
 
-    -- Bỏ qua nếu đang dùng Skill đặc biệt
+    -- Bỏ qua nếu đang dùng Skill Ult/Transform
     if isUlting or isUsingTF then return end
 
-    -- 1. GIỮ ỔN ĐỊNH CAMERA: Chuyển CameraSubject sang Dummy Humanoid để chống giật màn hình
+    -- 1. KHẮC PHỤC CHUI ĐẤT: Tắt va chạm tất cả các bộ phận ngoại trừ HumanoidRootPart
+    -- Tránh việc các chi bị đè xuống đất gây kẹt physics làm chìm nhân vật
+    for _, part in pairs(currentChar:GetChildren()) do
+        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+            part.CanCollide = false
+        end
+    end
+
+    -- 2. CHỐNG VĂNG/GIẬT: Triệt tiêu mọi gia tốc vật lý trục đứng và góc quay
+    pcall(function()
+        currentRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        currentRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+    end)
+
+    -- 3. GIỮ ỔN ĐỊNH CAMERA: Chuyển CameraSubject sang Dummy
     local currentCamera = workspace.CurrentCamera
     if currentCamera and currentCamera.CameraSubject ~= InvisibleHumanoid then
         currentChar:SetAttribute("NoHeadLerp", true)
@@ -1917,15 +1963,11 @@ RunService.Stepped:Connect(function()
     end
     InvisibleHumanoid.CameraOffset = currentHumanoid.CameraOffset
 
-    -- 2. CHỐNG VĂNG/GIẬT LUNG TUNG: Triệt tiêu mọi lực tác động lên cơ thể do Animation gây ra
-    currentRoot.Velocity = Vector3.zero
-    currentRoot.RotVelocity = Vector3.zero
-
-    -- 3. ÉP ANIMATION TÀNG HÌNH
+    -- 4. ÉP ANIMATION TÀNG HÌNH
     if cachedAnimHumanoid ~= currentHumanoid then
         if cachedAnimTrack then 
             pcall(function() 
-                if cachedAnimTrack.IsPlaying then cachedAnimTrack:Stop() end 
+                if cachedAnimTrack.IsPlaying then cachedAnimTrack:Stop(0) end 
                 cachedAnimTrack:Destroy() 
             end)
             cachedAnimTrack = nil 
@@ -1941,7 +1983,7 @@ RunService.Stepped:Connect(function()
             cachedAnimTrack = animator:LoadAnimation(anim)
             cachedAnimTrack.Priority = Enum.AnimationPriority.Action4
             
-            cachedAnimTrack:Play()
+            cachedAnimTrack:Play(0)
             cachedAnimTrack:AdjustSpeed(0)
             cachedAnimTrack:AdjustWeight(2e9)
         end
@@ -1951,7 +1993,7 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- HIỆU ỨNG MỜ THÂN THỂ VISUAL
+-- HIỆU ỨNG MỜ THÂN THỂ VISUAL (TRANSPARENCY)
 task.spawn(function()
     local function _initDesyncEffects(char)
         repeat task.wait()
