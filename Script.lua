@@ -1733,5 +1733,275 @@ local function startInvisibility()
 
     local c = lp.Character
     if c then _hookInvisChar(c) end
-end) 
+end
 
+
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local _ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local lp = Players.LocalPlayer
+local InvisibilityActive = false -- Trạng thái mặc định
+local invisBusy = false
+local cachedAnimHumanoid = nil
+local cachedAnimTrack = nil
+local lastRealCFrame = nil
+
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "InvisToggleUI"
+ScreenGui.Parent = CoreGui:FindFirstChild("RobloxGui") or CoreGui
+
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0, 140, 0, 35)
+ToggleBtn.Position = UDim2.new(0.02, 0, 0.45, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 60, 60)
+ToggleBtn.Text = "TÀNG HÌNH: OFF"
+ToggleBtn.Font = Enum.Font.SourceSansBold
+ToggleBtn.TextSize = 15
+ToggleBtn.Active = true
+ToggleBtn.Draggable = true
+ToggleBtn.Parent = ScreenGui
+
+
+local InvisibleHumanoid = Instance.new("Humanoid")
+local InvisiblePart30 = Instance.new("Part")
+InvisiblePart30.Anchored = true
+InvisiblePart30.CanCollide = false
+InvisiblePart30.Transparency = 1
+
+
+local function setInvisibilityState(state)
+    InvisibilityActive = state
+    if InvisibilityActive then
+        ToggleBtn.Text = "TÀNG HÌNH: ON"
+        ToggleBtn.TextColor3 = Color3.fromRGB(60, 255, 60)
+    else
+        ToggleBtn.Text = "TÀNG HÌNH: OFF"
+        ToggleBtn.TextColor3 = Color3.fromRGB(255, 60, 60)
+        
+        
+        if cachedAnimTrack then
+            pcall(function()
+                cachedAnimTrack:Stop()
+                cachedAnimTrack:Destroy()
+            end)
+            cachedAnimTrack = nil
+        end
+        cachedAnimHumanoid = nil
+        
+        
+        if lp.Character then
+            for _, part in pairs(lp.Character:GetDescendants()) do
+                if part:IsA("BasePart") and part.Transparency == 0.5 then
+                    part.Transparency = 0
+                end
+            end
+        end
+    end
+end
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    setInvisibilityState(not InvisibilityActive)
+end)
+
+
+getgenv().ToggleInvisibility = setInvisibilityState
+
+
+local _invisDesyncHeartbeatConn = RunService.Heartbeat:Connect(function()
+    if isUlting or isUsingTF then getgenv().desync = nil end
+    local hasDesync = getgenv().desync ~= nil
+    
+    
+    if not InvisibilityActive and not hasDesync then return end
+    if invisBusy then return end
+    invisBusy = true
+
+    local currentChar     = lp.Character
+    local currentHumanoid = currentChar and currentChar:FindFirstChildOfClass("Humanoid")
+    local currentRoot     = currentChar and currentChar:FindFirstChild("HumanoidRootPart")
+    
+    if not currentChar or not currentHumanoid or not currentRoot then 
+        invisBusy = false 
+        return 
+    end
+
+    if currentHumanoid.Health <= 0 then
+        if InvisibilityActive then
+            setInvisibilityState(false)
+        end
+        invisBusy = false 
+        return
+    end
+
+    local realCFrame   = currentRoot.CFrame
+    local realVelocity = currentRoot.Velocity
+    lastRealCFrame     = realCFrame
+    local currentCamera = workspace.CurrentCamera
+    local spoofCFrame = realCFrame
+
+    if hasDesync and not lp.Character:FindFirstChild("AbsoluteImmortal") then
+        spoofCFrame = (getgenv().desync and getgenv().desync.CFrame) or spoofCFrame
+    end
+
+    if spoofCFrame then
+        if currentCamera and not (InvisibilityActive and not hasDesync) then
+            currentChar:SetAttribute("NoHeadLerp", true)
+            currentCamera.CameraSubject = InvisibleHumanoid
+        end
+
+        if is_fighting and fight_cframe then
+            InvisiblePart30.CFrame = fight_cframe
+        else
+            InvisiblePart30.CFrame = realCFrame
+        end
+        currentRoot.CFrame = spoofCFrame
+    end
+
+    -- Ép Animation Tàng Hình
+    local invisAnim = nil
+    if InvisibilityActive then
+        if cachedAnimHumanoid ~= currentHumanoid then
+            if cachedAnimTrack then 
+                pcall(function() 
+                    if cachedAnimTrack.IsPlaying then cachedAnimTrack:Stop() end 
+                    cachedAnimTrack:Destroy() 
+                end)
+                cachedAnimTrack = nil 
+            end
+            cachedAnimHumanoid = currentHumanoid
+        end
+
+        local animator = currentHumanoid:FindFirstChildOfClass("Animator")
+        if animator then
+            if not cachedAnimTrack or cachedAnimTrack.Parent == nil then
+                local anim = Instance.new("Animation")
+                anim.AnimationId = "rbxassetid://71181015443030"
+                cachedAnimTrack  = animator:LoadAnimation(anim)
+                cachedAnimTrack.Priority = Enum.AnimationPriority.Action4
+                
+                cachedAnimTrack:Play()
+                cachedAnimTrack:AdjustSpeed(0)
+                cachedAnimTrack:AdjustWeight(2e9)
+            end
+            invisAnim = cachedAnimTrack
+            invisAnim.TimePosition = 13.45
+        end
+    end
+
+    RunService.RenderStepped:Wait()
+
+    InvisibleHumanoid.CameraOffset = currentHumanoid.CameraOffset
+    if currentCamera and currentCamera.CameraSubject == InvisibleHumanoid then
+        currentChar:SetAttribute("NoHeadLerp", false)
+        currentCamera.CameraSubject = currentHumanoid
+    end
+
+    if invisAnim and invisAnim.IsPlaying then 
+        pcall(function() invisAnim:Stop() end) 
+    end
+
+    if spoofCFrame then
+        if is_fighting and fight_cframe then
+            currentRoot.CFrame = fight_cframe
+        else
+            if currentCamera and UIS.MouseBehavior == Enum.MouseBehavior.LockCenter
+                and not hasDesync then
+                local lv = currentCamera.CFrame.LookVector
+                local flatLv = Vector3.new(lv.X, 0, lv.Z)
+                if flatLv.Magnitude > 0.001 then
+                    currentRoot.CFrame = CFrame.new(realCFrame.Position, realCFrame.Position + flatLv)
+                else
+                    currentRoot.CFrame = realCFrame
+                end
+            else
+                currentRoot.CFrame = realCFrame
+            end
+        end
+    end
+
+    currentRoot.Velocity = realVelocity
+    invisBusy = false
+end)
+
+
+task.spawn(function()
+    local function _initDesyncEffects(char)
+        repeat task.wait()
+        until (lp.Character == char)
+            and char:FindFirstChild('HumanoidRootPart')
+            and char:FindFirstChildOfClass('Humanoid')
+        if lp.Character ~= char then return end
+        local root = char:FindFirstChild('HumanoidRootPart')
+
+        
+        task.spawn(function()
+            while task.wait() and (not lp.Character or lp.Character == char) do
+                if getgenv().desync and not char:FindFirstChild('AbsoluteImmortal') then
+                    local v901 = {}
+                    local ok1, afterimage = pcall(function()
+                        return _ReplicatedStorage.Resources.NinjaUlt.Afterimage_Despawn:Clone()
+                    end)
+                    local ok2, tpthing = pcall(function()
+                        return _ReplicatedStorage.Resources.VanishingKick.tpthing:Clone()
+                    end)
+                    if ok1 and afterimage then
+                        afterimage.Parent = root
+                        v901[1] = afterimage
+                        for _, pe in pairs(afterimage:GetChildren()) do
+                            if pe:IsA('ParticleEmitter') then
+                                pe.Enabled = true
+                                pe.Rate = 100
+                            end
+                        end
+                    end
+                    
+                    if ok2 and tpthing then
+                        tpthing.Parent = root
+                        v901[2] = tpthing
+                        tpthing.Enabled = true
+                        tpthing.Rate = 100
+                    end
+                    repeat
+                        if v901[1] and v901[1].Parent then
+                            v901[1].CFrame = root.CFrame
+                        end
+                        RunService.RenderStepped:Wait()
+                    until not getgenv().desync or char:FindFirstChild('AbsoluteImmortal')
+                    for _, v in pairs(v901) do
+                        pcall(function() v:Destroy() end)
+                    end
+                end
+            end
+        end)
+
+
+        task.spawn(function()
+            for _, part in pairs(char:GetDescendants()) do
+                if part:IsA('BasePart') and part ~= root and part.Transparency ~= 1
+                    and not part.Name:lower():find('hitbox') then
+                    task.spawn(function()
+                        while task.wait() and (not lp.Character or lp.Character == char) do
+                            if part and (InvisibilityActive or (getgenv().desync and not char:FindFirstChild('AbsoluteImmortal'))) then
+                                part.Transparency = 0.5
+                                repeat
+                                    RunService.RenderStepped:Wait()
+                                until not InvisibilityActive
+                                    and (not getgenv().desync or char:FindFirstChild('AbsoluteImmortal'))
+                                    or (lp.Character and lp.Character ~= char)
+                                part.Transparency = 0
+                            end
+                        end
+                    end)
+                end
+            end
+        end)
+    end
+
+    if lp.Character then task.spawn(_initDesyncEffects, lp.Character) end
+    lp.CharacterAdded:Connect(function(char) task.spawn(_initDesyncEffects, char) end)
+end)
