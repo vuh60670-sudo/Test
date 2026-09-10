@@ -1813,7 +1813,7 @@ getgenv().ToggleInvisibility = setInvisibilityState
 
 
 -- =================================================================
--- HỆ THỐNG TÀNG HÌNH (TƯƠNG THÍCH HOÀN TOÀN VỚI TELE KILL UI CŨ)
+-- HỆ THỐNG TÀNG HÌNH (FIX LỖI VĂNG/GIẬT + TƯƠNG THÍCH TELE KILL)
 -- =================================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -1826,6 +1826,9 @@ local lp = Players.LocalPlayer
 local InvisibilityActive = false
 local cachedAnimHumanoid = nil
 local cachedAnimTrack = nil
+
+-- Dummy Humanoid phục vụ giữ ổn định Camera
+local InvisibleHumanoid = Instance.new("Humanoid")
 
 -- GIAO DIỆN NÚT ON/OFF
 local ScreenGui = Instance.new("ScreenGui")
@@ -1860,6 +1863,7 @@ local function setInvisibilityState(state)
         ToggleBtn.Text = "TÀNG HÌNH: OFF"
         ToggleBtn.TextColor3 = Color3.fromRGB(255, 60, 60)
         
+        -- Dọn dẹp Animation
         if cachedAnimTrack then
             pcall(function()
                 cachedAnimTrack:Stop()
@@ -1869,7 +1873,14 @@ local function setInvisibilityState(state)
         end
         cachedAnimHumanoid = nil
         
+        -- Trả lại Camera và độ mờ cho nhân vật
         if lp.Character then
+            local currentHumanoid = lp.Character:FindFirstChildOfClass("Humanoid")
+            if currentHumanoid and workspace.CurrentCamera then
+                workspace.CurrentCamera.CameraSubject = currentHumanoid
+                lp.Character:SetAttribute("NoHeadLerp", false)
+            end
+
             for _, part in pairs(lp.Character:GetDescendants()) do
                 if part:IsA("BasePart") and part.Transparency == 0.5 then
                     part.Transparency = 0
@@ -1885,23 +1896,32 @@ end)
 
 getgenv().ToggleInvisibility = setInvisibilityState
 
--- VÒNG LẶP XỬ LÝ ANIMATION TÀNG HÌNH (KHÔNG ÉP VỊ TRÍ CFRAME NẾU ĐANG TELE KILL)
+-- VÒNG LẶP XỬ LÝ CHỐNG GIẬT & ANIMATION (CHẠY TRƯỚC KHI TÍNH TOÁN VẬT LÝ)
 RunService.Stepped:Connect(function()
     if not InvisibilityActive then return end
 
     local currentChar = lp.Character
     local currentHumanoid = currentChar and currentChar:FindFirstChildOfClass("Humanoid")
-    if not currentChar or not currentHumanoid or currentHumanoid.Health <= 0 then return end
+    local currentRoot = currentChar and currentChar:FindFirstChild("HumanoidRootPart")
 
-    -- Tránh xung đột với Skill Ult / Transform
+    if not currentChar or not currentHumanoid or not currentRoot or currentHumanoid.Health <= 0 then return end
+
+    -- Bỏ qua nếu đang dùng Skill đặc biệt
     if isUlting or isUsingTF then return end
 
-    -- Kiểm tra nếu Tele Kill hoặc Auto Farm đang can thiệp vị trí thì KHÔNG can thiệp CFrame
-    local isTeleporting = (getgenv().TeleKillActive == true) 
-                       or (getgenv().Teleporting == true) 
-                       or (is_fighting and fight_cframe ~= nil)
+    -- 1. GIỮ ỔN ĐỊNH CAMERA: Chuyển CameraSubject sang Dummy Humanoid để chống giật màn hình
+    local currentCamera = workspace.CurrentCamera
+    if currentCamera and currentCamera.CameraSubject ~= InvisibleHumanoid then
+        currentChar:SetAttribute("NoHeadLerp", true)
+        currentCamera.CameraSubject = InvisibleHumanoid
+    end
+    InvisibleHumanoid.CameraOffset = currentHumanoid.CameraOffset
 
-    -- Chỉ ép Animation tàng hình
+    -- 2. CHỐNG VĂNG/GIẬT LUNG TUNG: Triệt tiêu mọi lực tác động lên cơ thể do Animation gây ra
+    currentRoot.Velocity = Vector3.zero
+    currentRoot.RotVelocity = Vector3.zero
+
+    -- 3. ÉP ANIMATION TÀNG HÌNH
     if cachedAnimHumanoid ~= currentHumanoid then
         if cachedAnimTrack then 
             pcall(function() 
@@ -1941,7 +1961,6 @@ task.spawn(function()
         if lp.Character ~= char then return end
         local root = char:FindFirstChild('HumanoidRootPart')
 
-        -- Làm mờ nhân vật (Transparency = 0.5) khi Bật Tàng hình
         task.spawn(function()
             for _, part in pairs(char:GetDescendants()) do
                 if part:IsA('BasePart') and part ~= root and part.Transparency ~= 1
