@@ -1813,6 +1813,108 @@ getgenv().InvisSystem = {
 }
 
 
+-- =================================================================
+-- HỆ THỐNG TÀNG HÌNH (ĐÃ THÊM UI NÚT BẤM VÀ SỬA LỖI KHÔNG CHẠY)
+-- =================================================================
+
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local _ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local lp = Players.LocalPlayer
+local InvisibilityActive = false -- Mặc định tắt
+local invisBusy = false
+local cachedAnimHumanoid = nil
+local cachedAnimTrack = nil
+local lastRealCFrame = nil
+
+-- Dummy Humanoid & Part phục vụ tàng hình
+local InvisibleHumanoid = Instance.new("Humanoid")
+local InvisiblePart30 = Instance.new("Part")
+InvisiblePart30.Anchored = true
+InvisiblePart30.CanCollide = false
+InvisiblePart30.Transparency = 1
+
+-- =================================================================
+-- TẠO GIAO DIỆN UI (NÚT BẤM BẬT/TẮT TÀNG HÌNH)
+-- =================================================================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "InvisToggleUI"
+ScreenGui.ResetOnSpawn = false
+
+-- Đảm bảo UI gắn đúng vào CoreGui hoặc PlayerGui
+pcall(function()
+    ScreenGui.Parent = CoreGui:FindFirstChild("RobloxGui") or CoreGui
+end)
+if not ScreenGui.Parent then
+    ScreenGui.Parent = lp:WaitForChild("PlayerGui")
+end
+
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0, 130, 0, 35)
+ToggleBtn.Position = UDim2.new(0.02, 0, 0.4, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 60, 60)
+ToggleBtn.Text = "TÀNG HÌNH: OFF"
+ToggleBtn.Font = Enum.Font.SourceSansBold
+ToggleBtn.TextSize = 14
+ToggleBtn.Active = true
+ToggleBtn.Draggable = true -- Có thể kéo thả trên màn hình
+ToggleBtn.Parent = ScreenGui
+
+-- Hàm chuyển đổi trạng thái Bật/Tắt
+local function setInvisibilityState(state)
+    if state == nil then
+        InvisibilityActive = not InvisibilityActive
+    else
+        InvisibilityActive = state
+    end
+
+    if InvisibilityActive then
+        ToggleBtn.Text = "TÀNG HÌNH: ON"
+        ToggleBtn.TextColor3 = Color3.fromRGB(60, 255, 60)
+    else
+        ToggleBtn.Text = "TÀNG HÌNH: OFF"
+        ToggleBtn.TextColor3 = Color3.fromRGB(255, 60, 60)
+        
+        -- Dọn dẹp trạng thái khi Tắt
+        if cachedAnimTrack then
+            pcall(function()
+                cachedAnimTrack:Stop()
+                cachedAnimTrack:Destroy()
+            end)
+            cachedAnimTrack = nil
+        end
+        cachedAnimHumanoid = nil
+
+        -- Trả lại độ trong suốt mặc định cho nhân vật
+        if lp.Character then
+            for _, part in pairs(lp.Character:GetDescendants()) do
+                if part:IsA("BasePart") and part.Transparency == 0.5 then
+                    part.Transparency = 0
+                end
+            end
+        end
+    end
+    return InvisibilityActive
+end
+
+-- Bấm nút UI để Bật/Tắt
+ToggleBtn.MouseButton1Click:Connect(function()
+    setInvisibilityState()
+end)
+
+-- Xuất hàm ra getgenv để dùng cho script bên ngoài nếu cần
+getgenv().InvisSystem = {
+    Toggle = setInvisibilityState,
+    GetState = function() return InvisibilityActive end
+}
+
+-- =================================================================
+-- VÒNG LẶP XỬ LÝ C FRAME TÀNG HÌNH (CHẠY NGẦM)
+-- =================================================================
 local _invisDesyncHeartbeatConn = RunService.Heartbeat:Connect(function()
     if isUlting or isUsingTF then getgenv().desync = nil end
     local hasDesync = getgenv().desync ~= nil
@@ -1832,7 +1934,7 @@ local _invisDesyncHeartbeatConn = RunService.Heartbeat:Connect(function()
 
     if currentHumanoid.Health <= 0 then
         if InvisibilityActive then
-            getgenv().InvisSystem.Toggle(false)
+            setInvisibilityState(false)
         end
         invisBusy = false 
         return
@@ -1862,7 +1964,7 @@ local _invisDesyncHeartbeatConn = RunService.Heartbeat:Connect(function()
         currentRoot.CFrame = spoofCFrame
     end
 
-    
+    -- Ép Animation Tàng Hình
     local invisAnim = nil
     if InvisibilityActive then
         if cachedAnimHumanoid ~= currentHumanoid then
@@ -1928,7 +2030,9 @@ local _invisDesyncHeartbeatConn = RunService.Heartbeat:Connect(function()
     invisBusy = false
 end)
 
-
+-- =================================================================
+-- HIỆU ỨNG TÀNG HÌNH & DESYNC VISUAL
+-- =================================================================
 task.spawn(function()
     local function _initDesyncEffects(char)
         repeat task.wait()
@@ -1938,7 +2042,7 @@ task.spawn(function()
         if lp.Character ~= char then return end
         local root = char:FindFirstChild('HumanoidRootPart')
 
-
+        -- Tạo Afterimage
         task.spawn(function()
             while task.wait() and (not lp.Character or lp.Character == char) do
                 if getgenv().desync and not char:FindFirstChild('AbsoluteImmortal') then
@@ -1978,7 +2082,7 @@ task.spawn(function()
             end
         end)
 
-
+        -- Làm mờ nhân vật (Transparency = 0.5) khi Bật Tàng hình
         task.spawn(function()
             for _, part in pairs(char:GetDescendants()) do
                 if part:IsA('BasePart') and part ~= root and part.Transparency ~= 1
