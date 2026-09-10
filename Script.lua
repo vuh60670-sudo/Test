@@ -1736,7 +1736,7 @@ local function startInvisibility()
 end
 
 -- =================================================================
--- HỆ THỐNG TÀNG HÌNH (ĐÃ SỬA LỖI RUNTIME + CÓ NÚT ON/OFF)
+-- HỆ THỐNG TÀNG HÌNH (ĐÃ FIX TƯƠNG THÍCH VỚI TELE KILL / HUB COMBAT)
 -- =================================================================
 
 local CoreGui = game:GetService("CoreGui")
@@ -1746,13 +1746,13 @@ local UIS = game:GetService("UserInputService")
 local _ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local lp = Players.LocalPlayer
-local InvisibilityActive = false -- Trạng thái mặc định
+local InvisibilityActive = false
 local invisBusy = false
 local cachedAnimHumanoid = nil
 local cachedAnimTrack = nil
 local lastRealCFrame = nil
 
--- GIAO DIỆN NÚT ON/OFF ĐƠN GIẢN
+-- GIAO DIỆN NÚT ON/OFF
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "InvisToggleUI"
 ScreenGui.Parent = CoreGui:FindFirstChild("RobloxGui") or CoreGui
@@ -1769,14 +1769,13 @@ ToggleBtn.Active = true
 ToggleBtn.Draggable = true
 ToggleBtn.Parent = ScreenGui
 
--- Dummy Humanoid & Part phục vụ tàng hình
+-- Dummy Humanoid & Part
 local InvisibleHumanoid = Instance.new("Humanoid")
 local InvisiblePart30 = Instance.new("Part")
 InvisiblePart30.Anchored = true
 InvisiblePart30.CanCollide = false
 InvisiblePart30.Transparency = 1
 
--- Hàm chuyển đổi trạng thái Bật/Tắt
 local function setInvisibilityState(state)
     InvisibilityActive = state
     if InvisibilityActive then
@@ -1786,7 +1785,6 @@ local function setInvisibilityState(state)
         ToggleBtn.Text = "TÀNG HÌNH: OFF"
         ToggleBtn.TextColor3 = Color3.fromRGB(255, 60, 60)
         
-        -- Dọn dẹp Animation khi Tắt
         if cachedAnimTrack then
             pcall(function()
                 cachedAnimTrack:Stop()
@@ -1796,7 +1794,6 @@ local function setInvisibilityState(state)
         end
         cachedAnimHumanoid = nil
         
-        -- Trả lại độ trong suốt mặc định cho nhân vật
         if lp.Character then
             for _, part in pairs(lp.Character:GetDescendants()) do
                 if part:IsA("BasePart") and part.Transparency == 0.5 then
@@ -1811,15 +1808,13 @@ ToggleBtn.MouseButton1Click:Connect(function()
     setInvisibilityState(not InvisibilityActive)
 end)
 
--- Gán hàm vào getgenv để có thể gọi từ Script/UI khác nếu muốn
 getgenv().ToggleInvisibility = setInvisibilityState
 
--- VÒNG LẶP XỬ LÝ C FRAME TÀNG HÌNH
+-- VÒNG LẶP XỬ LÝ C FRAME (ĐÃ ĐỒNG BỘ CÓ KHẢ NĂNG TELEPORT)
 local _invisDesyncHeartbeatConn = RunService.Heartbeat:Connect(function()
     if isUlting or isUsingTF then getgenv().desync = nil end
     local hasDesync = getgenv().desync ~= nil
     
-    -- Nếu không bật Tàng hình và không có Desync thì dừng xử lý
     if not InvisibilityActive and not hasDesync then return end
     if invisBusy then return end
     invisBusy = true
@@ -1908,6 +1903,9 @@ local _invisDesyncHeartbeatConn = RunService.Heartbeat:Connect(function()
         pcall(function() invisAnim:Stop() end) 
     end
 
+    -- Cập nhật lại realCFrame để nhận tọa độ Teleport mới nhất từ MAXU Hub
+    realCFrame = currentRoot.CFrame
+
     if spoofCFrame then
         if is_fighting and fight_cframe then
             currentRoot.CFrame = fight_cframe
@@ -1941,7 +1939,6 @@ task.spawn(function()
         if lp.Character ~= char then return end
         local root = char:FindFirstChild('HumanoidRootPart')
 
-        -- Tạo Afterimage
         task.spawn(function()
             while task.wait() and (not lp.Character or lp.Character == char) do
                 if getgenv().desync and not char:FindFirstChild('AbsoluteImmortal') then
@@ -1962,7 +1959,6 @@ task.spawn(function()
                             end
                         end
                     end
-                    -- Đã sửa lỗi cú pháp 'tpthing me' tại đây
                     if ok2 and tpthing then
                         tpthing.Parent = root
                         v901[2] = tpthing
@@ -1982,7 +1978,6 @@ task.spawn(function()
             end
         end)
 
-        -- Làm mờ nhân vật (Transparency = 0.5) khi Bật Tàng hình
         task.spawn(function()
             for _, part in pairs(char:GetDescendants()) do
                 if part:IsA('BasePart') and part ~= root and part.Transparency ~= 1
