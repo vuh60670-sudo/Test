@@ -1,523 +1,2173 @@
-Local Players = game:GetService("Players")
+
+
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local VirtualUser = game:GetService("VirtualUser")
-local CoreGui = game:GetService("CoreGui")
-local StarterGui = game:GetService("StarterGui")
 local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- Gửi thông báo khi load script
-pcall(function()
-    StarterGui:SetCore("SendNotification", {
-        Title = "Maxu Office Hub",
-        Text = "Banana tuổi lồn, maru one top",
-        Duration = 5
-    })
-end)
+local connections = {}
 
--- ================= 1. HIỆU ỨNG AURA XANH ================= --
-local function applyHighlight(char)
-    if not char then return end
-    if char:FindFirstChild("MaxuAura") then char.MaxuAura:Destroy() end
-    local hl = Instance.new("Highlight")
-    hl.Name = "MaxuAura"
-    hl.FillColor = Color3.fromRGB(0, 180, 150)
-    hl.FillTransparency = 0.4
-    hl.OutlineColor = Color3.fromRGB(50, 255, 200)
-    hl.OutlineTransparency = 0
-    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    hl.Parent = char
+
+local targetParent
+local success, result = pcall(function() return gethui and gethui() or nil end)
+targetParent = (success and result) and result or game:GetService("CoreGui") or PlayerGui
+
+for _, v in pairs(targetParent:GetChildren()) do
+    if v.Name == "MaxuHubPremium" then v:Destroy() end
 end
-if LocalPlayer.Character then applyHighlight(LocalPlayer.Character) end
-LocalPlayer.CharacterAdded:Connect(applyHighlight)
 
--- ================= 2. KHỞI TẠO UI ================= --
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "MaxuOfficeHubFull"
-ScreenGui.ResetOnSpawn = false
-if pcall(function() ScreenGui.Parent = CoreGui end) then else ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
+local MaxuHub = Instance.new("ScreenGui")
+MaxuHub.Name = "MaxuHubPremium"
+MaxuHub.ResetOnSpawn = false
+MaxuHub.Parent = targetParent
 
--- AVATAR ICON (THU NHỎ)
-local AvatarIcon = Instance.new("ImageButton", ScreenGui)
-AvatarIcon.Size = UDim2.new(0, 50, 0, 50) 
-AvatarIcon.Position = UDim2.new(0.5, -37, 0.05, 0)
-AvatarIcon.Image = "rbxassetid://138691340576184"
-AvatarIcon.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-AvatarIcon.Visible = false
-AvatarIcon.Active = true
-AvatarIcon.Draggable = true
-Instance.new("UICorner", AvatarIcon).CornerRadius = UDim.new(1, 0)
-local AvaStroke = Instance.new("UIStroke", AvatarIcon)
-AvaStroke.Thickness = 3
 
--- KHUNG CHÍNH
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 550, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -275, 0.5, -200)
-MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-MainFrame.BackgroundTransparency = 0.1
-MainFrame.Active = true
-MainFrame.Draggable = true
+table.insert(connections, MaxuHub.AncestryChanged:Connect(function(_, parent)
+    if not parent then
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.Anchored = false
+        end
+        for _, conn in ipairs(connections) do
+            if conn and conn.Connected then conn:Disconnect() end
+        end
+        table.clear(connections)
+    end
+end))
+
+
+local activeDragTarget = nil
+local dragStartPos = Vector2.zero
+local frameStartPos = UDim2.new()
+
+local function MakeDraggable(frame)
+    table.insert(connections, frame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+            activeDragTarget = frame
+            dragStartPos = input.Position
+            frameStartPos = frame.Position
+        end
+    end))
+end
+
+table.insert(connections, UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+    or input.UserInputType == Enum.UserInputType.Touch then
+        activeDragTarget = nil
+    end
+end))
+
+table.insert(connections, UserInputService.InputChanged:Connect(function(input)
+    if not activeDragTarget then return end
+
+    if input.UserInputType == Enum.UserInputType.MouseMovement
+    or input.UserInputType == Enum.UserInputType.Touch then
+        local delta = input.Position - dragStartPos
+        activeDragTarget.Position = UDim2.new(
+            frameStartPos.X.Scale,
+            frameStartPos.X.Offset + delta.X,
+            frameStartPos.Y.Scale,
+            frameStartPos.Y.Offset + delta.Y
+        )
+    end
+end))
+
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 600, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -300, 0.5, -210)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 MainFrame.BorderSizePixel = 0
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
-local Stroke = Instance.new("UIStroke", MainFrame)
-Stroke.Color = Color3.fromRGB(60, 60, 60)
-Stroke.Thickness = 1
+MainFrame.Active = true
+MainFrame.Parent = MaxuHub
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+MakeDraggable(MainFrame)
 
--- TOPBAR
-local Topbar = Instance.new("Frame", MainFrame)
-Topbar.Size = UDim2.new(1, 0, 0, 30)
-Topbar.BackgroundTransparency = 1
-local TitleLabel = Instance.new("TextLabel", Topbar)
-TitleLabel.Size = UDim2.new(1, -60, 1, 0); TitleLabel.Position = UDim2.new(0, 15, 0, 0)
-TitleLabel.BackgroundTransparency = 1; TitleLabel.Text = "Banana tuổi lồn, maru one top"
-TitleLabel.TextColor3 = Color3.fromRGB(200, 200, 200); TitleLabel.Font = Enum.Font.GothamMedium
-TitleLabel.TextSize = 12; TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-local MinBtn = Instance.new("TextButton", Topbar)
-MinBtn.Size = UDim2.new(0, 30, 0, 30); MinBtn.Position = UDim2.new(1, -30, 0, 0)
-MinBtn.BackgroundTransparency = 1; MinBtn.Text = "—"
-MinBtn.TextColor3 = Color3.fromRGB(200, 200, 200); MinBtn.Font = Enum.Font.GothamBold; MinBtn.TextSize = 12
+local TopBar = Instance.new("Frame")
+TopBar.Size = UDim2.new(1, 0, 0, 40)
+TopBar.BackgroundTransparency = 1
+TopBar.Parent = MainFrame
 
-MinBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false; AvatarIcon.Visible = true end)
-AvatarIcon.MouseButton1Click:Connect(function() MainFrame.Visible = true; AvatarIcon.Visible = false end)
+local TitleText = Instance.new("TextLabel")
+TitleText.Size = UDim2.new(0, 300, 1, 0)
+TitleText.Position = UDim2.new(0, 15, 0, 0)
+TitleText.BackgroundTransparency = 1
+TitleText.Text = "Maxu Hub Premium [ TSB Main V30 ]"
+TitleText.TextColor3 = Color3.fromRGB(200, 200, 200)
+TitleText.Font = Enum.Font.GothamMedium
+TitleText.TextSize = 14
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
+TitleText.Parent = TopBar
 
--- SIDEBAR TRÁI
-local Sidebar = Instance.new("Frame", MainFrame)
-Sidebar.Size = UDim2.new(0, 140, 1, -30); Sidebar.Position = UDim2.new(0, 0, 0, 30)
-Sidebar.BackgroundTransparency = 1
-local TabIndicator = Instance.new("Frame", Sidebar)
-TabIndicator.Size = UDim2.new(0, 3, 0, 20); TabIndicator.Position = UDim2.new(0, 10, 0, 10)
-TabIndicator.BackgroundColor3 = Color3.fromRGB(43, 196, 255)
-Instance.new("UICorner", TabIndicator).CornerRadius = UDim.new(1, 0)
-local MainTab = Instance.new("TextLabel", Sidebar)
-MainTab.Size = UDim2.new(1, -20, 0, 30); MainTab.Position = UDim2.new(0, 20, 0, 5)
-MainTab.BackgroundTransparency = 1; MainTab.Text = "Hub Features"
-MainTab.TextColor3 = Color3.fromRGB(255, 255, 255); MainTab.Font = Enum.Font.GothamMedium
-MainTab.TextSize = 13; MainTab.TextXAlignment = Enum.TextXAlignment.Left
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 40, 0, 40)
+CloseBtn.Position = UDim2.new(1, -40, 0, 0)
+CloseBtn.BackgroundTransparency = 1
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+CloseBtn.Font = Enum.Font.GothamMedium
+CloseBtn.TextSize = 16
+CloseBtn.Parent = TopBar
+table.insert(connections, CloseBtn.MouseButton1Click:Connect(function() MaxuHub:Destroy() end))
 
--- KHUNG NỘI DUNG CHÍNH
-local Content = Instance.new("ScrollingFrame", MainFrame)
-Content.Size = UDim2.new(1, -140, 1, -40); Content.Position = UDim2.new(0, 140, 0, 35)
-Content.BackgroundTransparency = 1; Content.BorderSizePixel = 0
-Content.ScrollBarThickness = 6; Content.CanvasSize = UDim2.new(0, 0, 0, 700)
+local MinimizeBtn = Instance.new("TextButton")
+MinimizeBtn.Size = UDim2.new(0, 40, 0, 40)
+MinimizeBtn.Position = UDim2.new(1, -80, 0, 0)
+MinimizeBtn.BackgroundTransparency = 1
+MinimizeBtn.Text = "-"
+MinimizeBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+MinimizeBtn.Font = Enum.Font.GothamBold
+MinimizeBtn.TextSize = 18
+MinimizeBtn.Parent = TopBar
 
-local UIList = Instance.new("UIListLayout", Content)
-UIList.SortOrder = Enum.SortOrder.LayoutOrder
-UIList.Padding = UDim.new(0, 10)
+local MiniButton = Instance.new("ImageButton")
+MiniButton.Size = UDim2.new(0, 50, 0, 50)
+MiniButton.Position = UDim2.new(0, 25, 0, 90) 
+MiniButton.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MiniButton.Image = "rbxassetid://138691340576184"
+MiniButton.Visible = false
+MiniButton.Active = true
+MiniButton.Parent = MaxuHub
+Instance.new("UICorner", MiniButton).CornerRadius = UDim.new(1, 0)
+local MiniStroke = Instance.new("UIStroke", MiniButton)
+MiniStroke.Color = Color3.fromRGB(0, 170, 255)
+MiniStroke.Thickness = 3
+MakeDraggable(MiniButton)
 
--- Hàm tạo Menu Component
-local function createToggle(name, desc, order)
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, -20, 0, 50); frame.BackgroundTransparency = 1; frame.LayoutOrder = order
-    local lbl = Instance.new("TextLabel", frame)
-    lbl.Size = UDim2.new(0.7, 0, 0.5, 0); lbl.BackgroundTransparency = 1; lbl.Text = name; lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
-    lbl.Font = Enum.Font.GothamMedium; lbl.TextSize = 14; lbl.TextXAlignment = Enum.TextXAlignment.Left
-    local dsc = Instance.new("TextLabel", frame)
-    dsc.Size = UDim2.new(0.7, 0, 0.5, 0); dsc.Position = UDim2.new(0, 0, 0.5, 0); dsc.BackgroundTransparency = 1
-    dsc.Text = desc; dsc.TextColor3 = Color3.fromRGB(130, 130, 130)
-    dsc.Font = Enum.Font.Gotham; dsc.TextSize = 11; dsc.TextXAlignment = Enum.TextXAlignment.Left
-    local btnBg = Instance.new("TextButton", frame)
-    btnBg.Size = UDim2.new(0, 40, 0, 20); btnBg.Position = UDim2.new(1, -50, 0.5, -10)
-    btnBg.BackgroundColor3 = Color3.fromRGB(60, 60, 60); btnBg.Text = ""
-    Instance.new("UICorner", btnBg).CornerRadius = UDim.new(1, 0)
-    local dot = Instance.new("Frame", btnBg)
-    dot.Size = UDim2.new(0, 14, 0, 14); dot.Position = UDim2.new(0, 3, 0.5, -7)
-    dot.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
-    Instance.new("UICorner", dot).CornerRadius = UDim.new(1, 0)
-    return frame, btnBg, dot
+table.insert(connections, MinimizeBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false MiniButton.Visible = true end))
+table.insert(connections, MiniButton.MouseButton1Click:Connect(function() MainFrame.Visible = true MiniButton.Visible = false end))
+
+local Container = Instance.new("Frame")
+Container.Size = UDim2.new(1, 0, 1, -40)
+Container.Position = UDim2.new(0, 0, 0, 40)
+Container.BackgroundTransparency = 1
+Container.Parent = MainFrame
+
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0, 160, 1, 0)
+Sidebar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Sidebar.BorderSizePixel = 0
+Sidebar.Parent = Container
+
+local Logo = Instance.new("ImageLabel")
+Logo.Size = UDim2.new(0, 64, 0, 64)
+Logo.Position = UDim2.new(0.5, -32, 0, 12)
+Logo.BackgroundTransparency = 1
+Logo.Image = "rbxassetid://134905637468012"
+Logo.Parent = Sidebar
+Instance.new("UICorner", Logo).CornerRadius = UDim.new(1, 0)
+
+local TabBtn = Instance.new("TextButton")
+TabBtn.Size = UDim2.new(0.9, 0, 0, 35)
+TabBtn.Position = UDim2.new(0.05, 0, 0, 90)
+TabBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+TabBtn.Text = "  TSB Main"
+TabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+TabBtn.Font = Enum.Font.GothamMedium
+TabBtn.TextSize = 14
+TabBtn.TextXAlignment = Enum.TextXAlignment.Left
+TabBtn.Parent = Sidebar
+Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
+
+local ContentFrame = Instance.new("ScrollingFrame")
+ContentFrame.Size = UDim2.new(1, -170, 1, -10)
+ContentFrame.Position = UDim2.new(0, 165, 0, 5)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.ScrollBarThickness = 3
+ContentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ContentFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+ContentFrame.Parent = Container
+local UIListLayout = Instance.new("UIListLayout", ContentFrame)
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 8)
+
+
+local function CreateHeader(text)
+    local H = Instance.new("TextLabel")
+    H.Size = UDim2.new(1, 0, 0, 30)
+    H.BackgroundTransparency = 1
+    H.Text = text
+    H.TextColor3 = Color3.fromRGB(255, 255, 255)
+    H.Font = Enum.Font.GothamBold
+    H.TextSize = 16
+    H.TextXAlignment = Enum.TextXAlignment.Left
+    H.Parent = ContentFrame
 end
 
-local function createSeparator(order)
-    local sep = Instance.new("Frame")
-    sep.Size = UDim2.new(1, -20, 0, 1); sep.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    sep.BorderSizePixel = 0; sep.LayoutOrder = order
-    return sep
+local function CreateToggle(name, callback)
+    local F = Instance.new("Frame")
+    F.Size = UDim2.new(1, -10, 0, 40)
+    F.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    F.Parent = ContentFrame
+    Instance.new("UICorner", F).CornerRadius = UDim.new(0, 6)
+    
+    local L = Instance.new("TextLabel", F)
+    L.Size = UDim2.new(0.7, 0, 1, 0)
+    L.Position = UDim2.new(0, 15, 0, 0)
+    L.BackgroundTransparency = 1
+    L.Text = name
+    L.TextColor3 = Color3.fromRGB(220, 220, 220)
+    L.Font = Enum.Font.Gotham
+    L.TextSize = 14
+    L.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local B = Instance.new("TextButton", F)
+    B.Size = UDim2.new(0, 40, 0, 20)
+    B.Position = UDim2.new(1, -55, 0.5, -10)
+    B.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    B.Text = ""
+    Instance.new("UICorner", B).CornerRadius = UDim.new(1, 0)
+    
+    local K = Instance.new("Frame", B)
+    K.Size = UDim2.new(0, 16, 0, 16)
+    K.Position = UDim2.new(0, 2, 0.5, -8)
+    K.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+    Instance.new("UICorner", K).CornerRadius = UDim.new(1, 0)
+    
+    local state = false
+    table.insert(connections, B.MouseButton1Click:Connect(function()
+        state = not state
+        callback(state)
+        TweenService:Create(K, TweenInfo.new(0.2), {Position = state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)}):Play()
+        TweenService:Create(B, TweenInfo.new(0.2), {BackgroundColor3 = state and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(60, 60, 60)}):Play()
+    end))
 end
 
--- TẠO MENU CHỨC NĂNG
-local _, AutoGoldBtn, AutoGoldDot = createToggle("Auto Farm Gold", "Tele qua mốc -> Chết -> Lặp", 1)
-AutoGoldBtn.Parent.Parent = Content; createSeparator(2).Parent = Content
-
-local _, AutoFarmBtn, AutoFarmDot = createToggle("Auto Farm Chest", "Bay đến mốc cuối -> Đợi tele -> Lặp", 3)
-AutoFarmBtn.Parent.Parent = Content; createSeparator(4).Parent = Content
-
-local _, FlyBtn, FlyDot = createToggle("Boat Fly Engine", "Chỉ bay khi ngồi ghế lái/xe người khác", 5)
-FlyBtn.Parent.Parent = Content
-
-local _, AutoFwdBtn, AutoFwdDot = createToggle("Auto Forward (Tự chạy)", "Tự động đẩy Tàu chạy thẳng", 6)
-AutoFwdBtn.Parent.Parent = Content; createSeparator(7).Parent = Content
-
-local _, AntiAfkBtn, AntiAfkDot = createToggle("Anti AFK", "Ngăn Roblox kick khi treo", 8)
-AntiAfkBtn.Parent.Parent = Content; createSeparator(9).Parent = Content
-
--- THANH KÉO TỐC ĐỘ (GLOBAL SPEED)
-local SpeedFrame = Instance.new("Frame", Content)
-SpeedFrame.Size = UDim2.new(1, -20, 0, 50); SpeedFrame.BackgroundTransparency = 1; SpeedFrame.LayoutOrder = 10
-local SPLabel = Instance.new("TextLabel", SpeedFrame)
-SPLabel.Size = UDim2.new(0.4, 0, 0.5, 0); SPLabel.BackgroundTransparency = 1; SPLabel.Text = "Global Speed"
-SPLabel.TextColor3 = Color3.fromRGB(255, 255, 255); SPLabel.Font = Enum.Font.GothamMedium; SPLabel.TextSize = 14; SPLabel.TextXAlignment = Enum.TextXAlignment.Left
-local SpeedValue = Instance.new("TextLabel", SpeedFrame)
-SpeedValue.Size = UDim2.new(0, 40, 1, 0); SpeedValue.Position = UDim2.new(0.4, 0, 0, 0); SpeedValue.BackgroundTransparency = 1
-SpeedValue.Text = "200"; SpeedValue.TextColor3 = Color3.fromRGB(180, 180, 180); SpeedValue.Font = Enum.Font.Gotham; SpeedValue.TextSize = 12
-local SliderBg = Instance.new("TextButton", SpeedFrame)
-SliderBg.Size = UDim2.new(0.45, 0, 0, 4); SliderBg.Position = UDim2.new(0.55, 0, 0.5, -2)
-SliderBg.BackgroundColor3 = Color3.fromRGB(60, 60, 60); SliderBg.Text = ""
-Instance.new("UICorner", SliderBg).CornerRadius = UDim.new(1, 0)
-local SliderFill = Instance.new("Frame", SliderBg)
-SliderFill.Size = UDim2.new(0.1, 0, 1, 0); SliderFill.BackgroundColor3 = Color3.fromRGB(43, 196, 255)
-Instance.new("UICorner", SliderFill).CornerRadius = UDim.new(1, 0)
-local SliderKnob = Instance.new("Frame", SliderFill)
-SliderKnob.Size = UDim2.new(0, 12, 0, 12); SliderKnob.Position = UDim2.new(1, -6, 0.5, -6); SliderKnob.BackgroundColor3 = Color3.fromRGB(43, 196, 255)
-Instance.new("UICorner", SliderKnob).CornerRadius = UDim.new(1, 0)
-
-createSeparator(11).Parent = Content
-
--- THANH KÉO CHỈNH DELAY TELEPORT (TELEPORT DELAY SLIDER)
-local DelayFrame = Instance.new("Frame", Content)
-DelayFrame.Size = UDim2.new(1, -20, 0, 50); DelayFrame.BackgroundTransparency = 1; DelayFrame.LayoutOrder = 12
-local DPLabel = Instance.new("TextLabel", DelayFrame)
-DPLabel.Size = UDim2.new(0.4, 0, 0.5, 0); DPLabel.BackgroundTransparency = 1; DPLabel.Text = "Teleport Delay (Auto Gold)"
-DPLabel.TextColor3 = Color3.fromRGB(255, 255, 255); DPLabel.Font = Enum.Font.GothamMedium; DPLabel.TextSize = 14; DPLabel.TextXAlignment = Enum.TextXAlignment.Left
-local DelayValue = Instance.new("TextLabel", DelayFrame)
-DelayValue.Size = UDim2.new(0, 40, 1, 0); DelayValue.Position = UDim2.new(0.4, 0, 0, 0); DelayValue.BackgroundTransparency = 1
-DelayValue.Text = "0.5s"; DelayValue.TextColor3 = Color3.fromRGB(180, 180, 180); DelayValue.Font = Enum.Font.Gotham; DelayValue.TextSize = 12
-local DelaySliderBg = Instance.new("TextButton", DelayFrame)
-DelaySliderBg.Size = UDim2.new(0.45, 0, 0, 4); DelaySliderBg.Position = UDim2.new(0.55, 0, 0.5, -2)
-DelaySliderBg.BackgroundColor3 = Color3.fromRGB(60, 60, 60); DelaySliderBg.Text = ""
-Instance.new("UICorner", DelaySliderBg).CornerRadius = UDim.new(1, 0)
-local DelaySliderFill = Instance.new("Frame", DelaySliderBg)
-DelaySliderFill.Size = UDim2.new(0.25, 0, 1, 0); DelaySliderFill.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
-Instance.new("UICorner", DelaySliderFill).CornerRadius = UDim.new(1, 0)
-local DelaySliderKnob = Instance.new("Frame", DelaySliderFill)
-DelaySliderKnob.Size = UDim2.new(0, 12, 0, 12); DelaySliderKnob.Position = UDim2.new(1, -6, 0.5, -6); DelaySliderKnob.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
-Instance.new("UICorner", DelaySliderKnob).CornerRadius = UDim.new(1, 0)
-
-createSeparator(13).Parent = Content
-
--- THANH KÉO TỐC ĐỘ BAY CHEST (Giới hạn Max = 1000)
-local ChestSpeedFrame = Instance.new("Frame", Content)
-ChestSpeedFrame.Size = UDim2.new(1, -20, 0, 50); ChestSpeedFrame.BackgroundTransparency = 1; ChestSpeedFrame.LayoutOrder = 14
-local CSPLabel = Instance.new("TextLabel", ChestSpeedFrame)
-CSPLabel.Size = UDim2.new(0.4, 0, 0.5, 0); CSPLabel.BackgroundTransparency = 1; CSPLabel.Text = "Chest Fly Speed"
-CSPLabel.TextColor3 = Color3.fromRGB(255, 255, 255); CSPLabel.Font = Enum.Font.GothamMedium; CSPLabel.TextSize = 14; CSPLabel.TextXAlignment = Enum.TextXAlignment.Left
-local ChestSpeedValue = Instance.new("TextLabel", ChestSpeedFrame)
-ChestSpeedValue.Size = UDim2.new(0, 40, 1, 0); ChestSpeedValue.Position = UDim2.new(0.4, 0, 0, 0); ChestSpeedValue.BackgroundTransparency = 1
-ChestSpeedValue.Text = "150"; ChestSpeedValue.TextColor3 = Color3.fromRGB(180, 180, 180); ChestSpeedValue.Font = Enum.Font.Gotham; ChestSpeedValue.TextSize = 12
-local CSliderBg = Instance.new("TextButton", ChestSpeedFrame)
-CSliderBg.Size = UDim2.new(0.45, 0, 0, 4); CSliderBg.Position = UDim2.new(0.55, 0, 0.5, -2)
-CSliderBg.BackgroundColor3 = Color3.fromRGB(60, 60, 60); CSliderBg.Text = ""
-Instance.new("UICorner", CSliderBg).CornerRadius = UDim.new(1, 0)
-local CSliderFill = Instance.new("Frame", CSliderBg)
-CSliderFill.Size = UDim2.new(0.15, 0, 1, 0); CSliderFill.BackgroundColor3 = Color3.fromRGB(0, 255, 150)
-Instance.new("UICorner", CSliderFill).CornerRadius = UDim.new(1, 0)
-local CSliderKnob = Instance.new("Frame", CSliderFill)
-CSliderKnob.Size = UDim2.new(0, 12, 0, 12); CSliderKnob.Position = UDim2.new(1, -6, 0.5, -6); CSliderKnob.BackgroundColor3 = Color3.fromRGB(0, 255, 150)
-Instance.new("UICorner", CSliderKnob).CornerRadius = UDim.new(1, 0)
-
-local PGStatus = Instance.new("TextLabel", Content)
-PGStatus.Size = UDim2.new(1, -20, 0, 30); PGStatus.LayoutOrder = 15; PGStatus.BackgroundTransparency = 1
-PGStatus.Text = "Status: Idle"; PGStatus.TextColor3 = Color3.fromRGB(130, 130, 130)
-PGStatus.Font = Enum.Font.Gotham; PGStatus.TextSize = 12; PGStatus.TextXAlignment = Enum.TextXAlignment.Left
-
--- ================= 3. FLOATING JOYSTICK ================= --
-local joyBg = Instance.new("Frame", ScreenGui)
-joyBg.Size = UDim2.new(0, 110, 0, 110); joyBg.Position = UDim2.new(0.04, 0, 0.55, 0)
-joyBg.BackgroundColor3 = Color3.fromRGB(10, 10, 15); joyBg.BackgroundTransparency = 0.4
-Instance.new("UICorner", joyBg).CornerRadius = UDim.new(1, 0)
-Instance.new("UIStroke", joyBg).Color = Color3.fromRGB(100, 100, 120)
-local joyKnob = Instance.new("Frame", joyBg)
-joyKnob.Size = UDim2.new(0, 45, 0, 45); joyKnob.Position = UDim2.new(0.5, 0, 0.5, 0)
-joyKnob.AnchorPoint = Vector2.new(0.5, 0.5); joyKnob.BackgroundColor3 = Color3.fromRGB(220, 220, 230)
-Instance.new("UICorner", joyKnob).CornerRadius = UDim.new(1, 0)
-
-local joyV = Vector2.zero; local currentTouchID = nil
-joyBg.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then currentTouchID = input end end)
-UserInputService.InputChanged:Connect(function(input)
-    if input == currentTouchID then
-        local pos = input.Position; local center = joyBg.AbsolutePosition + (joyBg.AbsoluteSize / 2)
-        local delta = Vector2.new(pos.X, pos.Y) - center; local radius = joyBg.AbsoluteSize.X / 2
-        if delta.Magnitude > radius then delta = delta.Unit * radius end
-        joyKnob.Position = UDim2.new(0.5, delta.X, 0.5, delta.Y); joyV = delta / radius
+local activeSliderDrag = nil
+table.insert(connections, UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        activeSliderDrag = nil
     end
-end)
-UserInputService.InputEnded:Connect(function(input) if input == currentTouchID then currentTouchID = nil; joyV = Vector2.zero; joyKnob.Position = UDim2.new(0.5, 0, 0.5, 0) end end)
+end))
 
--- ================= 4. LOGIC HỆ THỐNG ================= --
-local isAutoGold, isAutoFarming, isFlying, isAutoFwd, isAntiAfk = false, false, false, false, false
-local currentSpeed = 200
-local chestSpeed = 150 
-local teleportDelay = 0.5 
-local noclipLoop, bv, bg
+table.insert(connections, UserInputService.InputChanged:Connect(function(input)
+    if activeSliderDrag and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local barBG, min, max, fill, valueLabel, callback = unpack(activeSliderDrag)
+        local pos = math.clamp((input.Position.X - barBG.AbsolutePosition.X) / barBG.AbsoluteSize.X, 0, 1)
+        fill.Size = UDim2.new(pos, 0, 1, 0)
+        local value = math.floor(min + ((max - min) * pos))
+        valueLabel.Text = tostring(value)
+        callback(value)
+    end
+end))
 
-local GoldWaypoints = {
-    Vector3.new(-81.4, 96.2, 861.8), Vector3.new(-55.3, 78.3, 1490.3), Vector3.new(-117.7, 35.5, 2204.7),
-    Vector3.new(-3.9, 94.4, 2981.0), Vector3.new(-45.4, 69.4, 5305.0), Vector3.new(-6.0, 77.8, 6005.7),
-    Vector3.new(-27.8, 77.7, 7053.6), Vector3.new(-22.9, 67.1, 8368.5), Vector3.new(-44.7, -92.1, 8815.0)
+local function CreateSlider(name, min, max, default, callback)
+    local F = Instance.new("Frame")
+    F.Size = UDim2.new(1, -10, 0, 50)
+    F.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    F.Parent = ContentFrame
+    Instance.new("UICorner", F).CornerRadius = UDim.new(0, 6)
+    
+    local T = Instance.new("TextLabel", F)
+    T.Size = UDim2.new(1, -20, 0, 20)
+    T.Position = UDim2.new(0, 15, 0, 5)
+    T.BackgroundTransparency = 1
+    T.Text = name
+    T.TextColor3 = Color3.fromRGB(220, 220, 220)
+    T.Font = Enum.Font.Gotham
+    T.TextSize = 14
+    T.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local V = Instance.new("TextLabel", F)
+    V.Size = UDim2.new(0, 40, 0, 20)
+    V.Position = UDim2.new(0, 15, 0, 25)
+    V.BackgroundTransparency = 1
+    V.Text = tostring(default)
+    V.TextColor3 = Color3.fromRGB(150, 150, 150)
+    V.Font = Enum.Font.Gotham
+    V.TextSize = 12
+    V.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local B = Instance.new("TextButton", F)
+    B.Size = UDim2.new(1, -75, 0, 4)
+    B.Position = UDim2.new(0, 55, 0, 33)
+    B.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    B.Text = ""
+    B.BorderSizePixel = 0
+    
+    local Fill = Instance.new("Frame", B)
+    Fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+    Fill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+    Fill.BorderSizePixel = 0
+    
+    local K = Instance.new("Frame", Fill)
+    K.Size = UDim2.new(0, 12, 0, 12)
+    K.Position = UDim2.new(1, -6, 0.5, -6)
+    K.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+    Instance.new("UICorner", K).CornerRadius = UDim.new(1, 0)
+    
+    table.insert(connections, B.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            activeSliderDrag = {B, min, max, Fill, V, callback}
+            local pos = math.clamp((input.Position.X - B.AbsolutePosition.X) / B.AbsoluteSize.X, 0, 1)
+            Fill.Size = UDim2.new(pos, 0, 1, 0)
+            local value = math.floor(min + ((max - min) * pos))
+            V.Text = tostring(value)
+            callback(value)
+        end
+    end))
+end
+
+
+local Config = {
+    Target = nil,
+    StickyTele = false,
+    TeleDistance = 3, 
+    CharAim = false,
+    AutoSelect = false,
+    AntiFling = false,
+    WalkSpeed = 16,
+    WalkSpeedToggle = false,
+    AutoEscape = false,
+    EscapeHP = 35,
+    VoidDrag = false
 }
 
-local ChestWaypoints = {
-    Vector3.new(26.9, 34.8, 351.0), Vector3.new(26.9, 34.8, 351.0), Vector3.new(23.4, 40.1, 395.5),
-    Vector3.new(13.5, 63.3, 604.0), Vector3.new(-14.2, 69.9, 811.8), Vector3.new(-33.1, 56.7, 1005.4),
-    Vector3.new(-52.5, 40.0, 1198.7), Vector3.new(-55.9, 41.1, 1392.9), Vector3.new(-55.0, 45.2, 1437.7),
-    Vector3.new(-55.0, 45.2, 1437.7), Vector3.new(-54.1, 47.4, 1542.7), Vector3.new(-42.5, 45.2, 1692.2),
-    Vector3.new(-33.5, 42.8, 1841.8), Vector3.new(-38.4, 40.2, 2006.7), Vector3.new(-41.8, 37.9, 2156.6),
-    Vector3.new(-37.5, 36.8, 2276.5), Vector3.new(-31.5, 35.9, 2441.4), Vector3.new(-25.5, 40.0, 2606.2),
-    Vector3.new(-26.3, 44.7, 2786.1), Vector3.new(-35.4, 49.0, 2950.8), Vector3.new(-44.2, 52.9, 3100.5),
-    Vector3.new(-47.6, 57.6, 3280.4), Vector3.new(-42.8, 62.7, 3475.2), Vector3.new(-31.0, 66.6, 3624.6),
-    Vector3.new(10.1, 71.3, 3799.5), Vector3.new(61.9, 70.5, 3938.2), Vector3.new(31.4, 63.2, 4080.6),
-    Vector3.new(31.4, 63.2, 4080.6), Vector3.new(-16.2, 56.6, 4190.1), Vector3.new(-28.2, 54.0, 4233.4),
-    Vector3.new(-54.1, 50.6, 4441.2), Vector3.new(-74.0, 54.0, 4544.2), Vector3.new(-74.0, 54.0, 4544.2),
-    Vector3.new(-73.0, 60.8, 4694.0), Vector3.new(-58.2, 68.3, 4858.1), Vector3.new(-44.3, 70.6, 5037.5),
-    Vector3.new(-41.6, 64.5, 5217.2), Vector3.new(-51.4, 63.3, 5396.9), Vector3.new(-56.8, 64.1, 5591.8),
-    Vector3.new(-38.5, 56.8, 5755.4), Vector3.new(-23.6, 37.3, 5933.5), Vector3.new(-38.8, 21.1, 6081.8),
-    Vector3.new(-38.8, 21.1, 6081.7), Vector3.new(-36.1, 25.5, 6186.6), Vector3.new(-30.3, 32.5, 6351.3),
-    Vector3.new(-38.9, 40.8, 6545.9), Vector3.new(-50.1, 49.0, 6740.4), Vector3.new(-50.3, 53.4, 6845.3),
-    Vector3.new(-48.9, 54.7, 6875.2), Vector3.new(-32.5, 60.9, 7054.4), Vector3.new(-18.3, 56.6, 7218.7),
-    Vector3.new(-14.7, 49.2, 7383.5), Vector3.new(-6.2, 41.8, 7548.0), Vector3.new(3.0, 44.5, 7727.6),
-    Vector3.new(13.1, 53.5, 7922.1), Vector3.new(4.3, 63.2, 8131.5), Vector3.new(-11.4, 69.4, 8325.6),
-    Vector3.new(-7.1, 74.7, 8535.4), Vector3.new(-4.5, 78.0, 8670.4), Vector3.new(-4.6, 77.9, 8670.5),
-    Vector3.new(-4.6, 77.9, 8670.6), Vector3.new(-33.4, -25.1, 8775.8), Vector3.new(-36.6, -35.3, 8786.3),
-    Vector3.new(-35.7, -153.9, 8958.5), Vector3.new(-29.3, -241.8, 9132.0), Vector3.new(-25.6, -297.5, 9318.7),
-    Vector3.new(-27.1, -314.4, 9376.2), Vector3.new(-27.1, -314.4, 9376.2), Vector3.new(-42.6, -324.3, 9417.3),
-    Vector3.new(-42.6, -324.3, 9417.3), Vector3.new(-53.1, -334.9, 9459.8), Vector3.new(-53.1, -334.9, 9459.8),
-    Vector3.new(-58.1, -342.0, 9488.5), Vector3.new(-58.1, -342.0, 9488.6), Vector3.new(-58.1, -342.0, 9488.6),
-    Vector3.new(-58.1, -342.0, 9488.6), Vector3.new(-58.1, -346.7, 9488.4), Vector3.new(-58.1, -360.5, 9488.4),
-    Vector3.new(-58.1, -360.4, 9488.4), Vector3.new(-58.1, -360.4, 9488.4)
-}
 
-local function updateAvatarStatus()
-    -- Đã lược bỏ cập nhật text ON/OFF của AvatarIcon theo yêu cầu
+local isCastingSkill = false
+table.insert(connections, UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or
+       input.KeyCode == Enum.KeyCode.One or
+       input.KeyCode == Enum.KeyCode.Two or
+       input.KeyCode == Enum.KeyCode.Three or
+       input.KeyCode == Enum.KeyCode.Four then
+       
+        isCastingSkill = true
+        task.delay(1.5, function()
+            isCastingSkill = false
+        end)
+    end
+end))
+
+CreateHeader("Combat Pro")
+CreateToggle("cần bật auto player / tele kill", function(state) Config.StickyTele = state end)
+CreateToggle("Void Drag (KHÔNG ĐƯỢC BẬT VÌ CHỨC NĂNG LỖI)", function(state) Config.VoidDrag = state end)
+CreateToggle("auto player", function(state) Config.AutoSelect = state end)
+CreateSlider("Khoảng cách sau lưng", 1, 15, 3, function(val) Config.TeleDistance = val end)
+CreateToggle("Aim bot", function(state) Config.CharAim = state end)
+CreateToggle("Anti-Fling", function(state) Config.AntiFling = state end)
+CreateToggle("Tự động tẩu thoát khi yếu máu", function(state) 
+    Config.AutoEscape = state 
+    if not state and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.Anchored = false
+    end
+end)
+CreateSlider("Mốc % Máu Tẩu Thoát", 5, 90, 35, function(val) Config.EscapeHP = val end)
+
+CreateHeader("Player Buffs")
+CreateToggle("Bật WalkSpeed", function(state) Config.WalkSpeedToggle = state end)
+CreateSlider("Tốc độ chạy", 1, 300, 16, function(val) Config.WalkSpeed = val end)
+
+CreateHeader("Targeting")
+local TargetLabel = Instance.new("TextLabel")
+TargetLabel.Size = UDim2.new(1, -10, 0, 25)
+TargetLabel.BackgroundTransparency = 1
+TargetLabel.Text = "Target: CHƯA CHỌN"
+TargetLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+TargetLabel.Font = Enum.Font.GothamBold
+TargetLabel.TextSize = 14
+TargetLabel.Parent = ContentFrame
+
+local RefreshBtn = Instance.new("TextButton")
+RefreshBtn.Size = UDim2.new(1, -10, 0, 35)
+RefreshBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+RefreshBtn.Text = "Làm mới danh sách Player"
+RefreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RefreshBtn.Font = Enum.Font.GothamBold
+RefreshBtn.TextSize = 14
+RefreshBtn.Parent = ContentFrame
+Instance.new("UICorner", RefreshBtn).CornerRadius = UDim.new(0, 6)
+
+local PlayerListFrame = Instance.new("Frame")
+PlayerListFrame.Size = UDim2.new(1, -10, 0, 0)
+PlayerListFrame.AutomaticSize = Enum.AutomaticSize.Y
+PlayerListFrame.BackgroundTransparency = 1
+PlayerListFrame.Parent = ContentFrame
+local PlayerListLay = Instance.new("UIListLayout", PlayerListFrame)
+PlayerListLay.Padding = UDim.new(0, 4)
+
+local playerButtonConnections = {}
+
+local function RefreshPlayers()
+    for _, conn in ipairs(playerButtonConnections) do
+        if conn and conn.Connected then conn:Disconnect() end
+    end
+    table.clear(playerButtonConnections)
+    for _, child in ipairs(PlayerListFrame:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+    
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer then
+            local pBtn = Instance.new("TextButton")
+            pBtn.Size = UDim2.new(1, 0, 0, 30)
+            pBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+            pBtn.Text = p.Name
+            pBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            pBtn.Font = Enum.Font.GothamMedium
+            pBtn.TextSize = 13
+            pBtn.Parent = PlayerListFrame
+            Instance.new("UICorner", pBtn).CornerRadius = UDim.new(0, 4)
+            
+            local btnConn = pBtn.MouseButton1Click:Connect(function()
+                if Config.Target == p then 
+                    Config.Target = nil 
+                    TargetLabel.Text = "Target: CHƯA CHỌN" 
+                    TargetLabel.TextColor3 = Color3.fromRGB(255, 80, 80) 
+                    pBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+                else 
+                    Config.Target = p 
+                    TargetLabel.Text = "Target: " .. p.Name 
+                    TargetLabel.TextColor3 = Color3.fromRGB(80, 255, 80) 
+                    for _, b in ipairs(PlayerListFrame:GetChildren()) do
+                        if b:IsA("TextButton") then b.BackgroundColor3 = Color3.fromRGB(40, 40, 45) end
+                    end
+                    pBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255) 
+                end
+            end)
+            table.insert(playerButtonConnections, btnConn)
+            table.insert(connections, btnConn)
+        end
+    end
+end
+table.insert(connections, RefreshBtn.MouseButton1Click:Connect(RefreshPlayers))
+RefreshPlayers()
+
+local function FindNewTarget()
+    local closestPlayer = nil
+    local shortestDist = math.huge
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return nil end
+    
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character then
+            local tHum = p.Character:FindFirstChildOfClass("Humanoid")
+            local tHrp = p.Character:FindFirstChild("HumanoidRootPart")
+            if tHum and tHum.Health > 0 and tHrp then
+                local dist = (tHrp.Position - hrp.Position).Magnitude
+                if dist < shortestDist then
+                    shortestDist = dist
+                    closestPlayer = p
+                end
+            end
+        end
+    end
+    return closestPlayer
 end
 
-local sliderDragging, delayDragging, chestSliderDragging = false, false, false
-
-SliderBg.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then sliderDragging = true end end)
-SliderKnob.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then sliderDragging = true end end)
-
-DelaySliderBg.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then delayDragging = true end end)
-DelaySliderKnob.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then delayDragging = true end end)
-
-CSliderBg.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then chestSliderDragging = true end end)
-CSliderKnob.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then chestSliderDragging = true end end)
-
-UserInputService.InputEnded:Connect(function(i) 
-    if i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseButton1 then 
-        sliderDragging = false 
-        delayDragging = false
-        chestSliderDragging = false
-    end 
-end)
-
-local hue = 0
-RunService.RenderStepped:Connect(function(dt)
-    hue = hue + (dt * 0.3); if hue >= 1 then hue = 0 end; AvaStroke.Color = Color3.fromHSV(hue, 1, 1)
-    
-    if sliderDragging then
-        local mousePos = UserInputService:GetMouseLocation().X
-        local relative = math.clamp(mousePos - SliderBg.AbsolutePosition.X, 0, SliderBg.AbsoluteSize.X)
-        local percent = relative / SliderBg.AbsoluteSize.X; SliderFill.Size = UDim2.new(percent, 0, 1, 0)
-        currentSpeed = math.floor(percent * 2000); if currentSpeed < 10 then currentSpeed = 10 end
-        SpeedValue.Text = tostring(currentSpeed)
+table.insert(connections, RunService.Stepped:Connect(function()
+    if Config.AntiFling then
+        local char = LocalPlayer.Character
+        if char then
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if hrp and not hrp.Anchored then
+                if hrp.AssemblyLinearVelocity.Magnitude > 300 or hrp.AssemblyAngularVelocity.Magnitude > 300 then
+                    hrp.AssemblyLinearVelocity = Vector3.zero
+                    hrp.AssemblyAngularVelocity = Vector3.zero
+                end
+            end
+        end
     end
+end))
 
-    if delayDragging then
-        local mousePos = UserInputService:GetMouseLocation().X
-        local relative = math.clamp(mousePos - DelaySliderBg.AbsolutePosition.X, 0, DelaySliderBg.AbsoluteSize.X)
-        local percent = relative / DelaySliderBg.AbsoluteSize.X; DelaySliderFill.Size = UDim2.new(percent, 0, 1, 0)
-        teleportDelay = math.round((percent * 1.9 + 0.1) * 10) / 10 
-        DelayValue.Text = tostring(teleportDelay) .. "s"
+local hasEscapedForLowHP = false
+local escapeTargetPos = Vector3.new(-74.6, 84.0, 20352.1)
+
+table.insert(connections, RunService.Heartbeat:Connect(function()
+    local char = LocalPlayer.Character
+    if not char then return end
+    
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    
+    if not hum or not hrp or hum.Health <= 0 then 
+        if hrp then hrp.Anchored = false end
+        hasEscapedForLowHP = false
+        return 
     end
     
-    if chestSliderDragging then
-        local mousePos = UserInputService:GetMouseLocation().X
-        local relative = math.clamp(mousePos - CSliderBg.AbsolutePosition.X, 0, CSliderBg.AbsoluteSize.X)
-        local percent = relative / CSliderBg.AbsoluteSize.X; CSliderFill.Size = UDim2.new(percent, 0, 1, 0)
-        chestSpeed = math.floor(percent * 1000); if chestSpeed < 10 then chestSpeed = 10 end
-        ChestSpeedValue.Text = tostring(chestSpeed)
+    if Config.WalkSpeedToggle and hum.WalkSpeed ~= Config.WalkSpeed then 
+        hum.WalkSpeed = Config.WalkSpeed 
     end
-end)
+    
+    local hpPercent = (hum.Health / hum.MaxHealth) * 100
+    
+    
+    if Config.AutoEscape and hpPercent <= Config.EscapeHP then
+        hasEscapedForLowHP = true
+    end
+    
+    
+    if hasEscapedForLowHP then
+        if hpPercent >= (Config.EscapeHP + 15) then
+            hasEscapedForLowHP = false
+            hrp.Anchored = false
+        else
+            
+            for _, v in ipairs(char:GetDescendants()) do
+                if v:IsA("BodyMover") or v:IsA("LinearVelocity") or v:IsA("VectorForce") or v:IsA("AlignPosition") then
+                    v:Destroy()
+                end
+            end
+            
+            hrp.Anchored = true
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.AssemblyAngularVelocity = Vector3.zero
+            char:PivotTo(CFrame.new(escapeTargetPos))
+            return -- Dừng toàn bộ logic combat phía dưới khi đang bỏ trốn
+        end
+    end
 
-local function animateToggle(bgUI, dotUI, state)
-    if state then
-        TweenService:Create(bgUI, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(43, 196, 255)}):Play()
-        TweenService:Create(dotUI, TweenInfo.new(0.2), {Position = UDim2.new(1, -17, 0.5, -7), BackgroundColor3 = Color3.fromRGB(30, 30, 30)}):Play()
+    local targetInvalid = false
+    if not Config.Target or not Config.Target.Character then
+        targetInvalid = true
     else
-        TweenService:Create(bgUI, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 60)}):Play()
-        TweenService:Create(dotUI, TweenInfo.new(0.2), {Position = UDim2.new(0, 3, 0.5, -7), BackgroundColor3 = Color3.fromRGB(200, 200, 200)}):Play()
+        local targetHum = Config.Target.Character:FindFirstChildOfClass("Humanoid")
+        if not targetHum or targetHum.Health <= 0 then targetInvalid = true end
     end
-    updateAvatarStatus()
+    
+    if targetInvalid then
+        if Config.AutoSelect then
+            Config.Target = FindNewTarget()
+            if Config.Target then
+                TargetLabel.Text = "Target: " .. Config.Target.Name
+                TargetLabel.TextColor3 = Color3.fromRGB(80, 255, 80)
+            else
+                TargetLabel.Text = "Target: CHƯA CHỌN"
+                TargetLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+            end
+        else
+            Config.Target = nil
+            TargetLabel.Text = "Target: CHƯA CHỌN"
+            TargetLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+        end
+        hum.AutoRotate = true -- Trả lại khả năng xoay mặt khi mất target
+    end
+    
+    -- Logic Combat / Bám theo Target
+    if Config.Target and Config.Target.Character and not hasEscapedForLowHP then
+        local tHrp = Config.Target.Character:FindFirstChild("HumanoidRootPart")
+        
+        if tHrp then
+            
+            if Config.VoidDrag and isCastingSkill then
+                tHrp.CFrame = CFrame.new(tHrp.Position.X, -1000, tHrp.Position.Z)
+                tHrp.AssemblyLinearVelocity = Vector3.zero
+                
+                local safeY = math.max(hrp.Position.Y, 15)
+                hrp.CFrame = CFrame.new(tHrp.Position.X, safeY, tHrp.Position.Z)
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.AssemblyAngularVelocity = Vector3.zero
+                
+            elseif Config.StickyTele then
+                local targetBehindCFrame = tHrp.CFrame * CFrame.new(0, 0, Config.TeleDistance)
+                hrp.CFrame = hrp.CFrame:Lerp(targetBehindCFrame, 0.4)
+                
+                hrp.AssemblyLinearVelocity = Vector3.zero
+                hrp.AssemblyAngularVelocity = Vector3.zero
+            end
+            
+            
+            if Config.CharAim then
+                hum.AutoRotate = false -- Tắt tự động xoay của Roblox để không bị lệch Aim
+                local lookVector = Vector3.new(tHrp.Position.X, hrp.Position.Y, tHrp.Position.Z)
+                hrp.CFrame = CFrame.lookAt(hrp.Position, lookVector)
+            else
+                hum.AutoRotate = true
+            end
+        end
+    else
+        if hum then hum.AutoRotate = true end
+    end
+end))
+ -- ==========================================
+-- SCRIPT PHẦN 2 (BYPASS, ANTI-MOVES, INVISIBILITY, ETC)
+-- ==========================================
+
+local TeleportService = game:GetService("TeleportService")
+local Players    = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UIS        = game:GetService("UserInputService")
+local _ReplicatedStorage = game:GetService("ReplicatedStorage")
+local vim = game:GetService("VirtualInputManager")
+local lp         = Players.LocalPlayer
+
+local _moveList = {
+        { 'Normal Punch',             10468665991,   20,   1, 'Normal Punch'             },
+        { 'Consecutive Punches',      10466974800,   15,   2, 'Consecutive Punches'      },
+        { 'Shove',                    10471336737,   10,   3, 'Shove'                    },
+        { 'Uppercut',                 12510170988,   20,   4, 'Uppercut'                 },
+        { 'Table Flip',               11365563255,   20,   2, 'Table Flip'               },
+        { 'Serious Punch',            12983333733,   20,   3, 'Serious Punch'            },
+        { 'Omni Directional Punch',   13927612951,   20,   4, 'Omni Directional Punch'   },
+        { 'Lethal Whirlwind Stream',  12296882427,   20,   2, 'Lethal Whirlwind Stream'  },
+        { 'Flowing Water',            12272894215,   17.5, 1, 'Flowing Water'            },
+        { 'Hunters Grasp',            12307656616,   15,   3, "Hunter's Grasp"           },
+        { 'Preys Peril',              12351854556,   17,   4, "Prey's Peril"             },
+        { 'Water Stream Cutting Fist',12460977270,   8.45, 1, 'Water Stream Cutting Fist'},
+        { 'The Final Hunt',           12463072679,   101,  2, 'The Final Hunt'           },
+        { 'Rock Splitting Fist',      14057231976,   14,   3, 'Rock Splitting Fist'      },
+        { 'Crushed Rock',             13630786846,   9.58, 4, 'Crushed Rock'             },
+        { 'Machine Gun Blows',        12534735382,   15,   1, 'Machine Gun Blows'        },
+        { 'Ignition Burst',           12502664044,   17.5, 2, 'Ignition Burst'           },
+        { 'Blitz Shot',               12618271998,   25,   3, 'Blitz Shot'               },
+        { 'Jet Dive',                 12684390285,   17.5, 4, 'Jet Dive'                 },
+        { 'Thunder Kick',             14721837245,   15,   1, 'Thunder Kick'             },
+        { 'Speedblitz Dropkick',      12832505612,   20,   2, 'Speedblitz Dropkick'      },
+        { 'Flamewave Cannon',         13083332742,   25,   3, 'Flamewave Cannon'         },
+        { 'Incinerate',               13146710762,   101,  4, 'Incinerate'               },
+        { 'Flash Strike',             13309500827,   17.5, 1, 'Flash Strike'             },
+        { 'Whirlwind Kick',           13294790250,   20,   2, 'Whirlwind Kick'           },
+        { 'Scatter',                  13362587853,   21.25,3, 'Scatter'                  },
+        { 'Explosive Shuriken',       13501296372,   17.5, 4, 'Explosive Shuriken'       },
+        { 'Twinblade Rush',           13632347366,   20,   1, 'Twinblade Rush'           },
+        { 'Straight On',              13643152947,   17,   2, 'Straight On'              },
+        { 'Carnage',                  13723174078,   25,   3, 'Carnage'                  },
+        { 'Fourfold Flashstrike',     13881335713,   25,   4, 'Fourfold Flashstrike'     },
+        { 'Homerun',                  14004235777,   17.5, 1, 'Homerun'                  },
+
+        { 'Grand Slam',               14299135500,   20,   3, 'Grand Slam'               },
+        { 'Foul Ball',                14351441234,   23,   4, 'Foul Ball'                },
+        { 'Savage Tornado',           14719290328,   17,   1, 'Savage Tornado'           },
+        { 'Brutal Beatdown',          14701242661,   30,   2, 'Brutal Beatdown'          },
+        { 'Strength Difference',      14900168720,   20,   3, 'Strength Difference'      },
+        { 'Death Blow',               15128849047,   101,  4, 'Death Blow'               },
+        { 'Quick Slice',              15290930205,   20,   1, 'Quick Slice'              },
+        { 'Atmos Cleave',             15145462680,   22,   2, 'Atmos Cleave'             },
+        { 'Pinpoint Cut',             15295895753,   17,   3, 'Pinpoint Cut'             },
+        { 'Pinpoint Cut',             15295336270,   17,   3, 'Pinpoint Cut'             },
+        { 'Split Second Counter',     15311685628,   17.5, 4, 'Split Second Counter'     },
+        { 'Sunset',                   15520132233,   15,   1, 'Sunset'                   },
+        { 'Solar Cleave',             15676072469,   15,   2, 'Solar Cleave'             },
+        { 'Sunrise',                  16062410809,   20,   3, 'Sunrise'                  },
+        { 'Atomic Slash',             16082123712,   101,  4, 'Atomic Slash'             },
+        { 'Crushing Pull',            16139108718,   21,   1, 'Crushing Pull'            },
+        { 'Windstorm Fury',           16515850153,   20,   2, 'Windstorm Fury'           },
+        { 'Stone Coffin',             16431491215,   25,   3, 'Stone Coffin'             },
+        { 'Expulsive Push',           16597322398,   19,   4, 'Expulsive Push'           },
+        { 'Cosmic Strike',            16737255386,   30,   1, 'Cosmic Strike'            },
+        { 'Psychic Ricochet',         17464644182,   15,   2, 'Psychic Ricochet'         },
+        { 'Terrible Tornado',         17275150809,   101,  3, 'Terrible Tornado'         },
+        { 'Sky Snatcher',             17860467628,   17,   4, 'Sky Snatcher'             },
+        { 'Bullet Barrage',           17799224866,   20,   1, 'Bullet Barrage'           },
+        { 'Vanishing Kick',           17838006839,   23,   2, 'Vanishing Kick'           },
+        { 'Whirlwind Drop',           17857788598,   15,   3, 'Whirlwind Drop'           },
+        { 'Head First',               18179181663,   20,   4, 'Head First'               },
+        { 'Grand Fissure',            129651400898906, 18, 1, 'Grand Fissure'            },
+        { 'Twin Fangs',               18896229321,   15,   2, 'Twin Fangs'               },
+        { 'Earth Splitting Strike',   18897119503,   30,   3, 'Earth Splitting Strike'   },
+        { 'Last Breath',              106755459092436, 101, 4, 'Last Breath'             },
+        { 'Ravage',                   16945573694,   17.5, 1, 'Ravage'                   },
+        { 'Swift Sweep',              16944265635,   15,   2, 'Swift Sweep'              },
+        { 'Collateral Ruin',          17325254223,   22.5, 3, 'Collateral Ruin'          },
+        { 'Spiraling Storm',          78521642007560, 22.5, 4, 'Spiraling Storm'         },
+        { 'Stoic Bomb',               17141153099,   15,   1, 'Stoic Bomb'               },
+        { '202020 Dropkick',          17354976067,   101,  2, '20-20-20 Dropkick'        },
+        { 'Five Seasons',             18462892217,   100,  3, 'Five Seasons'             },
+        { 'Unlimited Flex Works',     77727115892579, 0,   4, 'Unlimited Flex Works'     },
+        { 'Permafrost',               100558589307006, 20, 1, 'Permafrost'               },
+        { 'Frost Forge',              137561511768861, 15, 2, 'Frost Forge'              },
+        { 'Freezing Path',            112620365240235, 25, 3, 'Freezing Path'            },
+        { 'Judgement Chain',          75547590335774, 20,  4, 'Judgement Chain'          },
+        { 'Weboom',                   113166426814229, 20, 1, 'Weboom'                   },
+        { 'Trinity Tear',             77509627104305, 25,  2, 'Trinity Tear'             },
+        { 'Plasma Cannon',            116753755471636, 20, 3, 'Plasma Cannon'            },
+        { 'Double Trouble',           138443750790136, 20, 4, 'Double Trouble'           },
+        { 'Doom Dive',                101588604872680, 23, 1, 'Doom Dive'               },
+        { 'Crowd Buster',             105442749844047, 22, 2, 'Crowd Buster'             },
+        { 'Hammer Heel',              109617620932970, 18, 3, 'Hammer Heel'              },
+        { 'Binding Cloth',            125955606488863, 20, 4, 'Binding Cloth'            },
+        { 'Hammer Heel',              135289891173395, 18, 3, 'Hammer Heel'              },
+        { 'Machine Gun Blows',        12971270638,   15,   1, 'Machine Gun Blows'        },
+        { 'Crushed Rock',             72451715583225, 9.58, 4, 'Crushed Rock'            },
+        -- Block animations (usados só para detectar 3x block toggle)
+        { 'Block',                    13380778193,   0,    0, 'Block'                    },
+        { 'Block',                    13370310513,   0,    0, 'Block'                    },
+        { 'Block',                    13935548552,   0,    0, 'Block'                    },
+
+    }
+
+local deathCounterActive     = true
+deathCounterConns = {}
+deathCounterDebounce = {}
+hookedChars = {}
+local _hookPlayerAntiMoves    -- forward-declared as upvalue to avoid local register overflow inside xpcall
+local _watchEnemyAntiMoves    -- forward-declared as upvalue to avoid local register overflow inside xpcall
+local _antiMovesCharConns     -- forward-declared as upvalue to avoid local register overflow inside xpcall
+local _antiMovesRespawnConns  -- forward-declared as upvalue to avoid local register overflow inside xpcall
+local isDeathCountered = false
+
+local function _getAntiDCWaitBeforeKill()
+    return 0
 end
 
-local function ToggleNoclip(state)
-    if noclipLoop then noclipLoop:Disconnect() noclipLoop = nil end
-    if state then
-        noclipLoop = RunService.Stepped:Connect(function()
-            if LocalPlayer.Character then for _, part in pairs(LocalPlayer.Character:GetDescendants()) do if part:IsA("BasePart") and part.CanCollide then part.CanCollide = false end end end
+local function isDeathCounter(child)
+    return child:IsA("Accessory") and child.Name == "Counter"
+end
+local deathCounterActive     = false
+local _antiDCAnimConn = nil
+local _antiDCCharConn = nil
+local function _antiDCTp(cf)
+    local char = lp.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if not (char and root) then return end
+    task.spawn(function()
+        RunService.RenderStepped:Once(function()
+            root.Velocity = Vector3.new()
+            RunService.Heartbeat:Wait()
+            root.Velocity = Vector3.new()
+        end)
+        RunService.Heartbeat:Once(function()
+            root.CFrame = cf
+        end)
+    end)
+end
+local function _antiDCFixCam()
+    local char = lp.Character
+    local hum  = char and char:FindFirstChildOfClass("Humanoid")
+    if char and hum and workspace.CurrentCamera then
+        local cf = workspace.CurrentCamera.CFrame
+        workspace.CurrentCamera:Destroy()
+        local cam = Instance.new("Camera", workspace)
+        cam.CameraType    = Enum.CameraType.Custom
+        cam.CameraSubject = hum
+        cam.CFrame        = cf
+        lp.CameraMode     = Enum.CameraMode.Classic
+        local head = char:FindFirstChild("Head")
+        if head then head.Anchored = false end
+    end
+end
+local function getDisplayName(player)
+    local ok, displayName = pcall(function() return player.DisplayName end)
+    if not ok or not displayName or displayName == "" then return player.Name end
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= player and p.DisplayName == displayName then
+            return player.Name
+        end
+    end
+    return displayName
+end
+local function _hookAntiDCAnimator(humanoid)
+    if _antiDCAnimConn then _antiDCAnimConn:Disconnect() _antiDCAnimConn = nil end
+    if not humanoid then return end
+    _antiDCAnimConn = humanoid.AnimationPlayed:Connect(function(track)
+        if not track.Animation.AnimationId:match("11343250001") then return end
+        isDeathCountered = true
+        task.spawn(function()
+            task.wait(0.2)
+            local waitBeforeKill = _getAntiDCWaitBeforeKill()
+            local stoppedCounterTrack = waitBeforeKill <= 0
+            if waitBeforeKill <= 0 then
+                pcall(function() track:Stop() end)
+            end
+            task.spawn(_antiDCFixCam)
+            local char = lp.Character
+            char:WaitForChild("AbsoluteImmortal", 1)
+            local root = char:FindFirstChild("HumanoidRootPart")
+            local savedCFrame = root.CFrame
+            local attacker = nil
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= lp then
+                    local tchar = player.Character
+                    local troot = tchar and tchar:FindFirstChild("HumanoidRootPart")
+                    local thum  = tchar and tchar:FindFirstChildOfClass("Humanoid")
+                    if tchar and troot and thum then
+                        for _, t in pairs(thum:GetPlayingAnimationTracks()) do
+                            if t.Animation.AnimationId:match("11343318134")
+                                and (root.Position - troot.Position).Magnitude <= 15 then
+                                attacker = player
+                            end
+                        end
+                    end
+                end
+            end
+            local attackerHum  = nil
+            local attackerName = nil
+            if attacker then
+                local ach = attacker.Character
+                attackerHum  = ach and ach:FindFirstChildOfClass("Humanoid")
+                attackerName = getDisplayName(attacker)
+            else
+                local _fakeModel = Instance.new("Model")
+                local _fakeHum   = Instance.new("Humanoid", _fakeModel)
+                _fakeHum.Health  = 100
+                attackerHum  = _fakeHum
+                attackerName = nil
+                task.delay(waitBeforeKill + 2, function()
+                    _fakeHum.Health = 0
+                end)
+            end
+            if waitBeforeKill > 0 then
+                task.wait(waitBeforeKill)
+                char = lp.Character
+                root = char and char:FindFirstChild("HumanoidRootPart")
+                if not (char and root) then return end
+            end
+            local savedSubject = workspace.CurrentCamera and workspace.CurrentCamera.CameraSubject
+            if workspace.CurrentCamera then workspace.CurrentCamera.CameraSubject = nil end
+            local myHum  = char:FindFirstChildOfClass("Humanoid")
+            local voidCF = CFrame.new(0, -10000, 0) * CFrame.Angles(math.rad(90), 0, 0)
+            local t0     = tick()
+            repeat
+                _antiDCTp(voidCF)
+                if waitBeforeKill > 0 and not stoppedCounterTrack then
+                    stoppedCounterTrack = true
+                    pcall(function() track:Stop() end)
+                end
+                RunService.RenderStepped:Wait()
+            until (attackerHum and attackerHum.Health <= 0)
+                or (myHum and myHum.Health <= 0)
+                or tick() >= t0 + 10
+            if workspace.CurrentCamera then workspace.CurrentCamera.CameraSubject = savedSubject end
+            _antiDCTp(savedCFrame)
+            task.wait(1)
+            local cur = lp.Character
+            if cur then
+                local freeze   = cur:FindFirstChild("Freeze")
+                local noRotate = cur:FindFirstChild("NoRotate")
+                if freeze   then freeze:Destroy()   end
+                if noRotate then noRotate:Destroy() end
+            end
+            task.spawn(_antiDCFixCam)
+            isDeathCountered = false
+        end)
+    end)
+end
+local function _hookAntiDCChar(char)
+    if not char then return end
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        _hookAntiDCAnimator(humanoid)
+    else
+        task.spawn(function()
+            local hum = char:WaitForChild("Humanoid", 5)
+            if hum then _hookAntiDCAnimator(hum) end
+        end)
+    end
+end
+_hookAntiDCChar(lp.Character)
+_antiDCCharConn = lp.CharacterAdded:Connect(function(char)
+    task.wait(0.1)
+    _hookAntiDCChar(char)
+end)
+
+local function watchCharForCounter(char, player)
+    if not char or not player or player == lp then return end
+    if hookedChars[char] then return end
+    hookedChars[char] = true
+    for _, child in pairs(char:GetChildren()) do
+        if isDeathCounter(child) then
+            if deathCounterActive and not deathCounterDebounce[player] then
+                deathCounterDebounce[player] = true
+            end
+        end
+    end
+    local conn = char.ChildAdded:Connect(function(child)
+        if not deathCounterActive then return end
+        if not isDeathCounter(child) then return end
+        if deathCounterDebounce[player] then return end
+        deathCounterDebounce[player] = true
+    end)
+    table.insert(deathCounterConns, conn)
+end
+local function hookPlayerDC(player)
+    if player == lp then return end
+    if player.Character then
+        task.spawn(watchCharForCounter, player.Character, player)
+    end
+    local conn = player.CharacterAdded:Connect(function(char)
+        if not deathCounterActive then return end
+        task.wait(0.1)
+        watchCharForCounter(char, player)
+    end)
+    table.insert(deathCounterConns, conn)
+end
+
+for _, co in pairs(deathCounterConns) do pcall(co.Disconnect, co) end
+for _, p in pairs(Players:GetPlayers()) do
+    hookPlayerDC(p)
+end
+table.insert(deathCounterConns, Players.PlayerAdded:Connect(function(p)
+    if deathCounterActive then hookPlayerDC(p) end
+end))
+
+_antiMovesCharConns    = {}
+_antiMovesRespawnConns = {}
+local antidebug = false
+local _desyncCharConn = lp.CharacterAdded:Connect(function()
+    getgenv().desync = nil
+end)
+
+isCountering = function(hum)
+    if not hum then return false end
+    local model = hum:FindFirstAncestorWhichIsA("Model")
+    if model and model:FindFirstChild("Counter") then return true end
+    for _, t in pairs(hum:GetPlayingAnimationTracks()) do
+        local id = t.Animation.AnimationId
+        if id:match("13726226905") or id:match("13726235415") then return true end
+    end
+    return false
+end
+
+_watchEnemyAntiMoves = function(player, char)
+    if not char then return end
+    if _antiMovesCharConns[player] then
+        pcall(function() _antiMovesCharConns[player]:Disconnect() end)
+        _antiMovesCharConns[player] = nil
+    end
+    repeat
+        task.wait()
+    until not char.Parent
+        or (char:FindFirstChild("HumanoidRootPart")
+            and char:FindFirstChildOfClass("Humanoid"))
+    if not char.Parent then return end
+    local enemyRoot = char:FindFirstChild("HumanoidRootPart")
+    local enemyHum  = char:FindFirstChildOfClass("Humanoid")
+    if not (enemyRoot and enemyHum) then return end
+    local function isAnimPlaying(hum, id)
+        local _d = tostring(id):match("%d+")
+        for _, t in pairs(hum:GetPlayingAnimationTracks()) do
+            if t.Animation.AnimationId:match(_d) then return t end
+        end
+        return nil
+    end
+    local conn = enemyHum.AnimationPlayed:Connect(function(track)
+        local animId = track.Animation.AnimationId
+        local myChar = lp.Character
+        local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+        if not (myChar and myRoot) then return end
+        task.spawn(function()
+            if track.WeightTarget == 0 or track.Speed == 0 then return end
+            local DESYNC_CF = CFrame.new(9e9, 9e9, 9e9)
+            local myHum = myChar and myChar:FindFirstChildOfClass("Humanoid")
+            local function safeDesyncLoop(condFn)
+                pcall(function()
+                    repeat
+                        getgenv().desync = { CFrame = DESYNC_CF }
+                        task.wait()
+                        local c = lp.Character
+                        local r = c and c:FindFirstChild("HumanoidRootPart")
+                        local h = c and c:FindFirstChildOfClass("Humanoid")
+                        if not (c and r and h) then return end
+                        myRoot = r
+                        myHum  = h
+                    until condFn()
+                end)
+                getgenv().desync = nil
+                if sethiddenproperty then
+                    local _cr = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+                    if _cr then pcall(function() sethiddenproperty(_cr, "PhysicsRepRootPart", nil) end) end
+                end
+            end
+            local function isDeathCountering(hum)
+                if not hum then return false end
+                local model = hum:FindFirstAncestorWhichIsA("Model")
+                return model and model:FindFirstChild("Counter") and true or false
+            end
+            local function makeHitboxPart(size)
+                local p = Instance.new("Part", workspace)
+                p.Anchored = true p.Size = size p.CanCollide = false p.Transparency = 1
+                local touched = false
+                local c1 = p.Touched:Connect(function(h) if h == myRoot or h == getgenv().InvisPart30 then touched = true end end)
+                local c2 = p.TouchEnded:Connect(function(h) if h == myRoot or h == getgenv().InvisPart30 then touched = false end end)
+                return p, function() return touched end, function()
+                    pcall(function() p:Destroy() end) c1:Disconnect() c2:Disconnect()
+                end
+            end
+            local function getMyPos()
+                local _ip = getgenv().InvisPart30
+                if getgenv().InvisActive and _ip then return _ip.Position end
+                return myRoot.Position
+            end
+            if animId:match("12983333733")
+                and char:GetAttribute("Ulted") ~= nil then
+                task.delay(1, function()
+                    if char:FindFirstChild("AbsoluteImmortal", true) and char:FindFirstChild("Freeze") then
+                        task.wait(4.25)
+                        local t = tick()
+                        safeDesyncLoop(function()
+                            return (getMyPos() - enemyRoot.Position).Magnitude > 150
+                                or tick() >= t + 2
+                                or not track.IsPlaying
+                        end)
+                    end
+                end)
+            end
+            if animId:match("11365563255")
+                and char:GetAttribute("Ulted") ~= nil then
+                task.delay(1, function()
+                    if char:FindFirstChild("AbsoluteImmortal", true) and char:FindFirstChild("Freeze") then
+                        task.wait(3)
+                        local startTickAntiMoves = tick()
+                        safeDesyncLoop(function()
+                            return tick() >= startTickAntiMoves + 2.5
+                        end)
+                    end
+                end)
+            end
+            if animId:match("13927612951")
+                and char:GetAttribute("Ulted") ~= nil then
+                local startTickSaitama = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 150
+                        or tick() >= startTickSaitama + 2.5
+                end)
+            end
+            if animId:match("12342141464") then
+                task.wait(3.5)
+                local startTickTableFlip = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 125
+                        or tick() >= startTickTableFlip + 1.25
+                end)
+            end
+            if animId:match("12463072679") then
+                local startTickOmni = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 25
+                        or tick() >= startTickOmni + 0.75
+                end)
+            end
+            if animId:match("13603396939") then
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - (enemyRoot.CFrame * CFrame.new(0,0,-1)).Position).Magnitude > 7.5
+                        or isCountering(enemyHum)
+                        or tick() >= t + 2.5
+                end)
+            end
+            if animId:match("12460977270") then
+                local p, isTouched, cleanup = makeHitboxPart(Vector3.new(12.5,5,12.5))
+                local t = tick()
+                repeat
+                    p.CFrame = enemyRoot.CFrame * CFrame.new(0,0,-6.25)
+                    if isTouched() and not isCountering(enemyHum) then
+                        getgenv().desync = { CFrame = DESYNC_CF }
+                    else getgenv().desync = nil end
+                    RunService.RenderStepped:Wait()
+                until tick() >= t + 1.85 or not track.IsPlaying
+                getgenv().desync = nil cleanup()
+            end
+            if animId:match("14057231976") then
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 10
+                        or tick() >= t + 0.5
+                end)
+                task.wait(0.5)
+                local t2 = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 10
+                        or isCountering(enemyHum)
+                        or tick() >= t2 + 1.25
+                end)
+            end
+            if animId:match("13630786846") then
+                local p, isTouched, cleanup = makeHitboxPart(Vector3.new(25,10,75))
+                local t = tick()
+                repeat
+                    p.CFrame = enemyRoot.CFrame * CFrame.new(0,0,-37.5)
+                    if isTouched() and not isCountering(enemyHum) then
+                        getgenv().desync = { CFrame = DESYNC_CF }
+                    else getgenv().desync = nil end
+                    RunService.RenderStepped:Wait()
+                until tick() >= t + 1.5 or not track.IsPlaying
+                getgenv().desync = nil cleanup()
+            end
+            if animId:match("72451715583225") then
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 15
+                        or tick() >= t + 0.75
+                end)
+            end
+            if animId:match("13813955149") then
+                if (getMyPos() - enemyRoot.Position).Magnitude <= 25 then
+                    getgenv().desync = { CFrame = CFrame.new(9e9, 9e9, 9e9) }
+                    task.wait(0.75)
+                    getgenv().desync = nil
+                end
+                local trashConn = nil
+                trashConn = workspace.Thrown.ChildAdded:Connect(function(p)
+                    if p:IsA("MeshPart") and p.Name:lower() == "trash can" then
+                        trashConn:Disconnect()
+                        local t = tick()
+                        safeDesyncLoop(function()
+                            return (getMyPos() - p.Position).Magnitude > 25
+                                or tick() >= t + 2
+                        end)
+                    end
+                end)
+            end
+            if animId:match("15128849047") then
+                local startTickGarou = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 100
+                        or isAnimPlaying(enemyHum, "15123665491")
+                        or tick() >= startTickGarou + 3
+                end)
+            end
+            if animId:match("15391323441") then
+                task.wait(5.5)
+                local startTickFinalHunt = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 125
+                        or tick() >= startTickFinalHunt + 1
+                end)
+            end
+            if animId:match("16082123712") then
+                task.wait(2.5)
+                local startTickMetalBat = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 50
+                        or tick() >= startTickMetalBat + 1.5
+                end)
+            end
+            if animId:match("14719290328") then
+                if (getMyPos() - enemyRoot.Position).Magnitude <= 50 then
+                    getgenv().desync = { CFrame = CFrame.new(9e9, 9e9, 9e9) }
+                end
+                task.wait(0.5)
+                if track.IsPlaying then
+                    local t = tick()
+                    safeDesyncLoop(function()
+                        return (getMyPos() - enemyRoot.Position).Magnitude > 50
+                            or isDeathCountering(myHum)
+                            or tick() >= t + 3.5
+                            or not track.IsPlaying
+                    end)
+                end
+            end
+            if animId:match("15520132233") then
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 50
+                        or isDeathCountering(myHum)
+                        or tick() >= t + 3.3
+                        or not track.IsPlaying
+                end)
+                repeat task.wait() until tick() >= t + 5.5
+                local t2 = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 100
+                        or isDeathCountering(myHum)
+                        or tick() >= t2 + 1
+                        or not track.IsPlaying
+                end)
+            end
+            if animId:match("15676072469") then
+                local p, isTouched, cleanup = makeHitboxPart(Vector3.new(50,10,150))
+                local t = tick()
+                repeat
+                    p.CFrame = enemyRoot.CFrame * CFrame.new(0,0,-75)
+                    if isTouched() and not isDeathCountering(myHum) then
+                        getgenv().desync = { CFrame = DESYNC_CF }
+                    else getgenv().desync = nil end
+                    RunService.RenderStepped:Wait()
+                until tick() >= t + 2 or not track.IsPlaying
+                getgenv().desync = nil cleanup()
+            end
+            if animId:match("16057411888") then
+                task.wait(4.25)
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 50
+                        or tick() >= t + 2
+                end)
+            end
+            if animId:match("18435535291") then
+                task.wait(4.25)
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 100
+                        or tick() >= t + 1.25
+                end)
+            end
+            if animId:match("17857788598") then
+                task.wait(0.65)
+                if track.IsPlaying then
+                    local part = Instance.new("Part", workspace)
+                    part.Anchored = true part.Size = Vector3.new(35, 2048, 35)
+                    part.CanCollide = false part.Transparency = 1
+                    local touched = false
+                    local c1 = part.Touched:Connect(function(h) if h == myRoot or h == getgenv().InvisPart30 then touched = true end end)
+                    local c2 = part.TouchEnded:Connect(function(h) if h == myRoot or h == getgenv().InvisPart30 then touched = false end end)
+                    local t = tick()
+                    repeat
+                        part.CFrame = enemyRoot.CFrame
+                        if touched and not isAnimPlaying(enemyHum, "15128849047") then
+                            getgenv().desync = { CFrame = CFrame.new(9e9, 9e9, 9e9) }
+                        else
+                            getgenv().desync = nil
+                        end
+                        RunService.RenderStepped:Wait()
+                    until tick() >= t + 0.85 or not track.IsPlaying
+                    getgenv().desync = nil
+                    c1:Disconnect() c2:Disconnect()
+                    pcall(function() part:Destroy() end)
+                end
+            end
+            if animId:match("129651400898906") then
+                task.wait(0.5)
+                local savedEnemyCF = enemyRoot.CFrame
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 75
+                        or tick() >= t + 1.25
+                        or not track.IsPlaying
+                end)
+                task.wait(1)
+                local t2 = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - savedEnemyCF.Position).Magnitude > 75
+                        or tick() >= t2 + 1.75
+                end)
+            end
+            if animId:match("18896229321") then
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 15
+                        or isCountering(enemyHum)
+                        or tick() >= t + 3.5
+                        or not track.IsPlaying
+                end)
+                task.wait(1)
+                if track.IsPlaying then
+                    if (getMyPos() - enemyRoot.Position).Magnitude <= 25 then
+                        local t2 = tick()
+                        safeDesyncLoop(function()
+                            return (getMyPos() - enemyRoot.Position).Magnitude > 25
+                                or tick() >= t2 + 2
+                                or not track.IsPlaying
+                        end)
+                    end
+                end
+            end
+            if animId:match("18897119503") then
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 50
+                        or tick() >= t + 1.5
+                end)
+            end
+            if (animId:match("106755459092436") or animId:match("75502010126640")) then
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 50
+                        or tick() >= t + 2
+                end)
+            end
+            if animId:match("16515850153") then
+                task.spawn(function()
+                    if (getMyPos() - enemyRoot.Position).Magnitude <= 15 then
+                        getgenv().desync = { CFrame = CFrame.new(9e9, 9e9, 9e9) }
+                    end
+                    local _Dotted = workspace.Thrown:WaitForChild("Dotted", 1)
+                    if _Dotted then
+                        local _Dots = _Dotted:WaitForChild("Dots", 1)
+                        if not _Dots then
+                            getgenv().desync = nil
+                            return
+                        end
+                        local t = tick()
+                        if (getMyPos() - _Dots.Position).Magnitude > 20 then
+                            getgenv().desync = nil
+                        end
+                        safeDesyncLoop(function()
+                            return (getMyPos() - _Dots.Position).Magnitude > 20
+                                or isDeathCountering(myHum)
+                                or tick() >= t + 4.25
+                        end)
+                    else
+                        getgenv().desync = nil
+                    end
+                end)
+            end
+            if animId:match("16431491215") then
+                local t = tick()
+                repeat task.wait()
+                until (getMyPos() - (enemyRoot.CFrame * CFrame.new(0, 0, -25)).Position).Magnitude <= 25
+                    or isAnimPlaying(enemyHum, "15128849047")
+                    or tick() >= t + 0.75
+                if not isAnimPlaying(enemyHum, "15128849047") then
+                    safeDesyncLoop(function()
+                        return (getMyPos() - (enemyRoot.CFrame * CFrame.new(0, 0, -20)).Position).Magnitude > 25
+                            or isAnimPlaying(enemyHum, "15128849047")
+                            or tick() >= t + 0.75
+                    end)
+                end
+            end
+            if animId:match("16597912086") then
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 15
+                        or isCountering(enemyHum)
+                        or tick() >= t + 0.75
+                end)
+            end
+            if animId:match("17275150809") then
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 50
+                        or tick() >= t + 1
+                end)
+            end
+            if animId:match("17278415853")
+                and char:GetAttribute("Character") == "Esper" then
+                task.wait(11)
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 100
+                        or tick() >= t + 6
+                end)
+            end
+            if animId:match("16734584478") then
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 75
+                        or tick() >= t + 5.75
+                end)
+            end
+            if animId:match("13376869471") then
+                local part = Instance.new("Part", workspace)
+                part.Anchored = true part.Size = Vector3.new(10, 7.5, 60)
+                part.CanCollide = false part.Transparency = 1
+                local touched = false
+                local c1 = part.Touched:Connect(function(h) if h == myRoot or h == getgenv().InvisPart30 then touched = true end end)
+                local c2 = part.TouchEnded:Connect(function(h) if h == myRoot or h == getgenv().InvisPart30 then touched = false end end)
+                local t = tick()
+                repeat
+                    part.CFrame = enemyRoot.CFrame * CFrame.new(0, 0, -part.Size.Z / 2)
+                    RunService.RenderStepped:Wait()
+                until touched or tick() >= t + 3 or not track.IsPlaying
+                if touched then
+                    local t2 = tick()
+                    safeDesyncLoop(function()
+                        return not touched or tick() >= t2 + 1 or not track.IsPlaying
+                    end)
+                end
+                c1:Disconnect() c2:Disconnect()
+                pcall(function() part:Destroy() end)
+            end
+            if animId:match("13294790250") then
+                task.wait(0.5)
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - (enemyRoot.CFrame * CFrame.new(0, 0, -2.5)).Position).Magnitude > 10
+                        or isCountering(enemyHum)
+                        or tick() >= t + 0.75
+                end)
+            end
+            if animId:match("13632347366") then
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 75
+                        or isDeathCountering(myHum)
+                        or tick() >= t + 1.75
+                        or not track.IsPlaying
+                end)
+            end
+            if animId:match("13723174078") then
+                task.wait(0.5)
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 50
+                        or tick() >= t + 2
+                        or not track.IsPlaying
+                end)
+            end
+            if animId:match("13881335713") then
+                task.wait(0.75)
+                if track.IsPlaying then
+                    local part = Instance.new("Part", workspace)
+                    part.Anchored = true part.Size = Vector3.new(35, 5, 60)
+                    part.CanCollide = false part.Transparency = 1
+                    local touched = false
+                    local c1 = part.Touched:Connect(function(h) if h == myRoot or h == getgenv().InvisPart30 then touched = true end end)
+                    local c2 = part.TouchEnded:Connect(function(h) if h == myRoot or h == getgenv().InvisPart30 then touched = false end end)
+                    local t = tick()
+                    repeat
+                        part.CFrame = enemyRoot.CFrame * CFrame.new(0, 0, -part.Size.Z / 2)
+                        RunService.RenderStepped:Wait()
+                    until touched or tick() >= t + 3 or not track.IsPlaying
+                    if touched then
+                        local t2 = tick()
+                        safeDesyncLoop(function()
+                            return not touched or tick() >= t2 + 1 or not track.IsPlaying
+                        end)
+                    end
+                    c1:Disconnect() c2:Disconnect()
+                    pcall(function() part:Destroy() end)
+                end
+            end
+            if animId:match("14721837245") then
+                local t = tick()
+                safeDesyncLoop(function()
+                    return (getMyPos() - enemyRoot.Position).Magnitude > 25
+                        or isAnimPlaying(enemyHum, "15128849047")
+                        or tick() >= t + 1.5
+                        or not track.IsPlaying
+                end)
+                if tick() >= t + 1.5 then
+                    task.wait(1)
+                    local t2 = tick()
+                    safeDesyncLoop(function()
+                        return (getMyPos() - enemyRoot.Position).Magnitude > 100
+                            or tick() >= t2 + 1.5
+                            or not track.IsPlaying
+                    end)
+                end
+            end
+            if animId:match("13083332742") then
+                task.wait(1)
+                local part = Instance.new("Part", workspace)
+                part.Anchored = true part.Size = Vector3.new(12.5, 5, 1000)
+                part.CanCollide = false part.Transparency = 1
+                task.delay(0.25, function() part.CFrame = enemyRoot.CFrame * CFrame.new(0, 0, -part.Size.Z / 2) end)
+                local touched = false
+                local c1 = part.Touched:Connect(function(h) if h == myRoot or h == getgenv().InvisPart30 then touched = true end end)
+                local c2 = part.TouchEnded:Connect(function(h) if h == myRoot or h == getgenv().InvisPart30 then touched = false end end)
+                local t = tick()
+                repeat
+                    if touched and not isDeathCountering(myHum) then
+                        getgenv().desync = { CFrame = CFrame.new(9e9, 9e9, 9e9) }
+                    else getgenv().desync = nil end
+                    RunService.RenderStepped:Wait()
+                until tick() >= t + 4 or not track.IsPlaying
+                getgenv().desync = nil
+                c1:Disconnect() c2:Disconnect()
+                pcall(function() part:Destroy() end)
+            end
+            if animId:match("13146710762") then
+                task.wait(3.25)
+                if track.IsPlaying then
+                    local parts = {}
+                    local offsets = {
+                        CFrame.new(50, 0, -200) * CFrame.Angles(0, math.rad(-15), 0),
+                        CFrame.new(-50, 0, -200) * CFrame.Angles(0, math.rad(15), 0),
+                        CFrame.new(0, 0, -200),
+                    }
+                    local touched = false
+                    local conns = {}
+                    for _, off in ipairs(offsets) do
+                        local p = Instance.new("Part", workspace)
+                        p.Anchored = true p.Size = Vector3.new(100, 75, 400)
+                        p.CanCollide = false p.Transparency = 1
+                        p.CFrame = enemyRoot.CFrame * off
+                        table.insert(parts, p)
+                        table.insert(conns, p.Touched:Connect(function(h) if h == myRoot or h == getgenv().InvisPart30 then touched = true end end))
+                        table.insert(conns, p.TouchEnded:Connect(function(h) if h == myRoot or h == getgenv().InvisPart30 then touched = false end end))
+                    end
+                    local t = tick()
+                    repeat
+                        if touched and not isDeathCountering(myHum) then
+                            getgenv().desync = { CFrame = CFrame.new(9e9, 9e9, 9e9) }
+                        else getgenv().desync = nil end
+                        RunService.RenderStepped:Wait()
+                    until tick() >= t + 6 or not track.IsPlaying
+                    getgenv().desync = nil
+                    for _, c in ipairs(conns) do c:Disconnect() end
+                    for _, p in ipairs(parts) do pcall(function() p:Destroy() end) end
+                end
+            end
+            if animId:match("11343318134") then
+                task.wait(7.5)
+                if not track.IsPlaying then return end
+                local parts = {}
+                local offsets = {
+                    CFrame.new(60, 0, -250) * CFrame.Angles(0, math.rad(-15), 0),
+                    CFrame.new(-60, 0, -250) * CFrame.Angles(0, math.rad(15), 0),
+                    CFrame.new(0, 0, -250),
+                }
+                local touched = {false, false, false}
+                local conns = {}
+                for idx, off in ipairs(offsets) do
+                    local p = Instance.new("Part", workspace)
+                    p.Anchored = true p.Size = Vector3.new(125, 5, 500)
+                    p.CanCollide = false p.Transparency = 1
+                    table.insert(parts, p)
+                    local i = idx
+                    table.insert(conns, p.Touched:Connect(function(h) if h == myRoot or h == getgenv().InvisPart30 then touched[i] = true end end))
+                    table.insert(conns, p.TouchEnded:Connect(function(h) if h == myRoot or h == getgenv().InvisPart30 then touched[i] = false end end))
+                end
+                local t = tick()
+                repeat
+                    for idx, p in ipairs(parts) do
+                        p.CFrame = enemyRoot.CFrame * offsets[idx]
+                    end
+                    if touched[1] or touched[2] or touched[3] then
+                        getgenv().desync = { CFrame = CFrame.new(9e9, 9e9, 9e9) }
+                    else
+                        getgenv().desync = nil
+                    end
+                    RunService.RenderStepped:Wait()
+                until tick() >= t + 2.5 or not track.IsPlaying
+                getgenv().desync = nil
+                for _, c in ipairs(conns) do c:Disconnect() end
+                for _, p in ipairs(parts) do pcall(function() p:Destroy() end) end
+            end
+        end)
+    end)
+    _antiMovesCharConns[player] = conn
+end
+_hookPlayerAntiMoves = function(player)
+    if player == lp then return end
+    if player.Character then
+        task.spawn(_watchEnemyAntiMoves, player, player.Character)
+    end
+    local c = player.CharacterAdded:Connect(function(char)
+        task.spawn(_watchEnemyAntiMoves, player, char)
+    end)
+    _antiMovesRespawnConns[player] = c
+end
+for _, p in pairs(Players:GetPlayers()) do
+    task.spawn(_hookPlayerAntiMoves, p)
+end
+local _antiMovesPlayerConn = Players.PlayerAdded:Connect(function(p)
+    if p == lp then return end
+    task.spawn(function()
+        local t = tick()
+        repeat
+            RunService.RenderStepped:Wait()
+        until p:GetAttribute("PreloadDone") or tick() >= t + 30
+        if p and p.Parent then
+            if p.Character then
+                task.spawn(_watchEnemyAntiMoves, p, p.Character)
+            end
+            local c = p.CharacterAdded:Connect(function(char)
+                task.spawn(_watchEnemyAntiMoves, p, char)
+            end)
+            _antiMovesRespawnConns[p] = c
+        end
+    end)
+end)
+local _antiMovesPlayerRemovingConn = Players.PlayerRemoving:Connect(function(p)
+    if _antiMovesCharConns[p] then
+        pcall(function() _antiMovesCharConns[p]:Disconnect() end)
+        _antiMovesCharConns[p] = nil
+    end
+    if _antiMovesRespawnConns[p] then
+        pcall(function() _antiMovesRespawnConns[p]:Disconnect() end)
+        _antiMovesRespawnConns[p] = nil
+    end
+end)
+
+workspace.FallenPartsDestroyHeight = 0/0
+local _voidProtConn = workspace:GetPropertyChangedSignal("FallenPartsDestroyHeight"):Connect(function()
+    local h = workspace.FallenPartsDestroyHeight
+    if h == h then
+        workspace.FallenPartsDestroyHeight = 0/0
+    end
+end)
+local _voidFloor = Instance.new("Part", workspace)
+_voidFloor.CFrame       = CFrame.new(0, -10008, 0)
+_voidFloor.Anchored     = true
+_voidFloor.Size         = Vector3.new(2048, 10, 2048)
+_voidFloor.Transparency = 0.5
+_voidFloor.CanCollide   = true
+_voidFloor.Name         = game:GetService("HttpService"):GenerateGUID()
+local _voidSavedHealth   = 100
+local _voidHealthConn    = nil
+local _voidRenderConn    = nil
+local _voidCharConn      = nil
+local function _hookVoidProtChar(char)
+    if not char then return end
+    local hum  = char:FindFirstChildOfClass("Humanoid") or char:WaitForChild("Humanoid", 3)
+    local root = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart", 3)
+    if not hum or not root then return end
+    _voidSavedHealth = hum.Health
+    if _voidHealthConn then _voidHealthConn:Disconnect() _voidHealthConn = nil end
+    if _voidRenderConn then _voidRenderConn:Disconnect() _voidRenderConn = nil end
+    _voidRenderConn = RunService.RenderStepped:Connect(function()
+        local r = char:FindFirstChild("HumanoidRootPart")
+        if r then
+            _voidSavedHealth = hum.Health
+            _voidFloor.CFrame = CFrame.new(r.Position.X, -10008, r.Position.Z)
+        end
+    end)
+    _voidHealthConn = hum.HealthChanged:Connect(function(hp)
+        local r = char:FindFirstChild("HumanoidRootPart")
+        if hp <= 0 and r and r.CFrame.Y <= 0 then
+            hum.Health = _voidSavedHealth
+        end
+    end)
+end
+_hookVoidProtChar(lp.Character)
+_voidCharConn = lp.CharacterAdded:Connect(function(char)
+    task.wait(0.1)
+    _hookVoidProtChar(char)
+end)
+local _movingExclusionConns = {}
+local _movingExclusionOwned = setmetatable({}, { __mode = "k" })
+local function _ensureMovingExclusion(char)
+    if not char then return nil end
+    local existing = char:FindFirstChild("MovingExclusion")
+    if existing then return existing end
+    local marker = Instance.new("Folder")
+    marker.Name = "MovingExclusion"
+    pcall(function() marker:SetAttribute("ZKAYOwned", true) end)
+    marker.Parent = char
+    _movingExclusionOwned[marker] = true
+    return marker
+end
+local function _hookMovingExclusionChar(char)
+    if not char then return end
+    _ensureMovingExclusion(char)
+    local conn = char.ChildRemoved:Connect(function(child)
+        if child.Name == "MovingExclusion" then
+            task.defer(_ensureMovingExclusion, char)
+        end
+    end)
+    table.insert(_movingExclusionConns, conn)
+end
+_hookMovingExclusionChar(lp.Character)
+table.insert(_movingExclusionConns, lp.CharacterAdded:Connect(function(char)
+    task.wait(0.1)
+    _hookMovingExclusionChar(char)
+end))
+local invisBusy           = false
+local cachedAnimTrack     = nil
+local cachedAnimHumanoid  = nil
+local lastRealCFrame      = nil
+local _invisPartConns     = {}
+local InvisibleModel    = Instance.new("Model", workspace)
+local InvisibleHumanoid = Instance.new("Humanoid", InvisibleModel)
+local InvisiblePart30   = Instance.new("Part", InvisibleModel)
+InvisiblePart30.Name         = "HumanoidRootPart"
+InvisiblePart30.CanCollide   = false
+InvisiblePart30.Transparency = 1
+InvisiblePart30.Anchored     = true
+InvisiblePart30.Size         = Vector3.new(2, 2, 1)
+getgenv().InvisHumanoid = InvisibleHumanoid
+getgenv().InvisPart30   = InvisiblePart30
+local InvisibilityActive = false
+
+local function stopInvisibility()
+    if not InvisibilityActive then return end
+    InvisibilityActive = false
+    getgenv().InvisActive = false
+    invisBusy = false
+    if cachedAnimTrack then
+        pcall(function() if cachedAnimTrack.IsPlaying then cachedAnimTrack:Stop() end end)
+        cachedAnimTrack = nil
+    end
+    cachedAnimHumanoid = nil
+    local char = lp.Character
+    if char then
+        local root = char:FindFirstChild("HumanoidRootPart")
+        if root and lastRealCFrame then pcall(function() root.CFrame = lastRealCFrame end) end
+        lastRealCFrame = nil
+        local humanoid = char:FindFirstChildOfClass("Humanoid")
+        if humanoid then pcall(function() workspace.CurrentCamera.CameraSubject = humanoid end) end
+        pcall(function() char:SetAttribute("NoHeadLerp", false) end)
+        for _, _ic in pairs(_invisPartConns) do pcall(function() _ic:Disconnect() end) end
+        _invisPartConns = {}
+        for _, part in pairs(char:GetDescendants()) do
+            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                part.LocalTransparencyModifier = 0
+            end
+        end
+    end
+end
+local function softResetInvisibility()
+    if cachedAnimTrack then
+        pcall(function() if cachedAnimTrack.IsPlaying then cachedAnimTrack:Stop() end end)
+        cachedAnimTrack = nil
+    end
+    cachedAnimHumanoid = nil
+    lastRealCFrame     = nil
+    invisBusy          = false
+end
+local function _hookInvisPart(part)
+    if not part:IsA("BasePart") then return end
+    if part.Name == "HumanoidRootPart" then return end
+    if part.Transparency == 1 then return end
+    if part.Name:lower():find("hitbox") then return end
+    part.LocalTransparencyModifier = 0.5
+    local conn = part:GetPropertyChangedSignal("LocalTransparencyModifier"):Connect(function()
+        if not InvisibilityActive then return end
+        if part.LocalTransparencyModifier ~= 0.5 then
+            part.LocalTransparencyModifier = 0.5
+        end
+    end)
+    table.insert(_invisPartConns, conn)
+end
+local function _hookInvisChar(c)
+    for _, part in pairs(c:GetDescendants()) do
+        _hookInvisPart(part)
+    end
+    local _descConn = c.DescendantAdded:Connect(function(desc)
+        if InvisibilityActive then _hookInvisPart(desc) end
+    end)
+    table.insert(_invisPartConns, _descConn)
+end
+local function startInvisibility()
+    if InvisibilityActive then stopInvisibility() return end
+    local char     = lp.Character
+    if not char then return end
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    local root     = char:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not root then return end
+    InvisibilityActive = true
+    getgenv().InvisActive = true
+    invisBusy = false
+
+    local c = lp.Character
+    if c then _hookInvisChar(c) end
+end
+
+-- =================================================================
+-- HỆ THỐNG TÀNG HÌNH (ĐÃ FIX TƯƠNG THÍCH VỚI TELE KILL / HUB COMBAT)
+-- =================================================================
+
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local _ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local lp = Players.LocalPlayer
+local InvisibilityActive = false
+local invisBusy = false
+local cachedAnimHumanoid = nil
+local cachedAnimTrack = nil
+local lastRealCFrame = nil
+
+-- GIAO DIỆN NÚT ON/OFF
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "InvisToggleUI"
+ScreenGui.Parent = CoreGui:FindFirstChild("RobloxGui") or CoreGui
+
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0, 140, 0, 35)
+ToggleBtn.Position = UDim2.new(0.02, 0, 0.45, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 60, 60)
+ToggleBtn.Text = "TÀNG HÌNH: OFF"
+ToggleBtn.Font = Enum.Font.SourceSansBold
+ToggleBtn.TextSize = 15
+ToggleBtn.Active = true
+ToggleBtn.Draggable = true
+ToggleBtn.Parent = ScreenGui
+
+-- Dummy Humanoid & Part
+local InvisibleHumanoid = Instance.new("Humanoid")
+local InvisiblePart30 = Instance.new("Part")
+InvisiblePart30.Anchored = true
+InvisiblePart30.CanCollide = false
+InvisiblePart30.Transparency = 1
+
+local function setInvisibilityState(state)
+    InvisibilityActive = state
+    if InvisibilityActive then
+        ToggleBtn.Text = "TÀNG HÌNH: ON"
+        ToggleBtn.TextColor3 = Color3.fromRGB(60, 255, 60)
+    else
+        ToggleBtn.Text = "TÀNG HÌNH: OFF"
+        ToggleBtn.TextColor3 = Color3.fromRGB(255, 60, 60)
+        
+        if cachedAnimTrack then
+            pcall(function()
+                cachedAnimTrack:Stop()
+                cachedAnimTrack:Destroy()
+            end)
+            cachedAnimTrack = nil
+        end
+        cachedAnimHumanoid = nil
+        
+        if lp.Character then
+            for _, part in pairs(lp.Character:GetDescendants()) do
+                if part:IsA("BasePart") and part.Transparency == 0.5 then
+                    part.Transparency = 0
+                end
+            end
+        end
+    end
+end
+
+ToggleBtn.MouseButton1Click:Connect(function()
+    setInvisibilityState(not InvisibilityActive)
+end)
+
+getgenv().ToggleInvisibility = setInvisibilityState
+
+-- VÒNG LẶP XỬ LÝ C FRAME (ĐÃ ĐỒNG BỘ CÓ KHẢ NĂNG TELEPORT)
+local _invisDesyncHeartbeatConn = RunService.Heartbeat:Connect(function()
+    if isUlting or isUsingTF then getgenv().desync = nil end
+    local hasDesync = getgenv().desync ~= nil
+    
+    if not InvisibilityActive and not hasDesync then return end
+    if invisBusy then return end
+    invisBusy = true
+
+    local currentChar     = lp.Character
+    local currentHumanoid = currentChar and currentChar:FindFirstChildOfClass("Humanoid")
+    local currentRoot     = currentChar and currentChar:FindFirstChild("HumanoidRootPart")
+    
+    if not currentChar or not currentHumanoid or not currentRoot then 
+        invisBusy = false 
+        return 
+    end
+
+    if currentHumanoid.Health <= 0 then
+        if InvisibilityActive then
+            setInvisibilityState(false)
+        end
+        invisBusy = false 
+        return
+    end
+
+    local realCFrame   = currentRoot.CFrame
+    local realVelocity = currentRoot.Velocity
+    lastRealCFrame     = realCFrame
+    local currentCamera = workspace.CurrentCamera
+    local spoofCFrame = realCFrame
+
+    if hasDesync and not lp.Character:FindFirstChild("AbsoluteImmortal") then
+        spoofCFrame = (getgenv().desync and getgenv().desync.CFrame) or spoofCFrame
+    end
+
+    if spoofCFrame then
+        if currentCamera and not (InvisibilityActive and not hasDesync) then
+            currentChar:SetAttribute("NoHeadLerp", true)
+            currentCamera.CameraSubject = InvisibleHumanoid
+        end
+
+        if is_fighting and fight_cframe then
+            InvisiblePart30.CFrame = fight_cframe
+        else
+            InvisiblePart30.CFrame = realCFrame
+        end
+        currentRoot.CFrame = spoofCFrame
+    end
+
+    -- Ép Animation Tàng Hình
+    local invisAnim = nil
+    if InvisibilityActive then
+        if cachedAnimHumanoid ~= currentHumanoid then
+            if cachedAnimTrack then 
+                pcall(function() 
+                    if cachedAnimTrack.IsPlaying then cachedAnimTrack:Stop() end 
+                    cachedAnimTrack:Destroy() 
+                end)
+                cachedAnimTrack = nil 
+            end
+            cachedAnimHumanoid = currentHumanoid
+        end
+
+        local animator = currentHumanoid:FindFirstChildOfClass("Animator")
+        if animator then
+            if not cachedAnimTrack or cachedAnimTrack.Parent == nil then
+                local anim = Instance.new("Animation")
+                anim.AnimationId = "rbxassetid://71181015443030"
+                cachedAnimTrack  = animator:LoadAnimation(anim)
+                cachedAnimTrack.Priority = Enum.AnimationPriority.Action4
+                
+                cachedAnimTrack:Play()
+                cachedAnimTrack:AdjustSpeed(0)
+                cachedAnimTrack:AdjustWeight(2e9)
+            end
+            invisAnim = cachedAnimTrack
+            invisAnim.TimePosition = 13.45
+        end
+    end
+
+    RunService.RenderStepped:Wait()
+
+    InvisibleHumanoid.CameraOffset = currentHumanoid.CameraOffset
+    if currentCamera and currentCamera.CameraSubject == InvisibleHumanoid then
+        currentChar:SetAttribute("NoHeadLerp", false)
+        currentCamera.CameraSubject = currentHumanoid
+    end
+
+    if invisAnim and invisAnim.IsPlaying then 
+        pcall(function() invisAnim:Stop() end) 
+    end
+
+    -- Cập nhật lại realCFrame để nhận tọa độ Teleport mới nhất từ MAXU Hub
+    realCFrame = currentRoot.CFrame
+
+    if spoofCFrame then
+        if is_fighting and fight_cframe then
+            currentRoot.CFrame = fight_cframe
+        else
+            if currentCamera and UIS.MouseBehavior == Enum.MouseBehavior.LockCenter
+                and not hasDesync then
+                local lv = currentCamera.CFrame.LookVector
+                local flatLv = Vector3.new(lv.X, 0, lv.Z)
+                if flatLv.Magnitude > 0.001 then
+                    currentRoot.CFrame = CFrame.new(realCFrame.Position, realCFrame.Position + flatLv)
+                else
+                    currentRoot.CFrame = realCFrame
+                end
+            else
+                currentRoot.CFrame = realCFrame
+            end
+        end
+    end
+
+    currentRoot.Velocity = realVelocity
+    invisBusy = false
+end)
+
+-- HIỆU ỨNG TÀNG HÌNH & DESYNC VISUAL
+task.spawn(function()
+    local function _initDesyncEffects(char)
+        repeat task.wait()
+        until (lp.Character == char)
+            and char:FindFirstChild('HumanoidRootPart')
+            and char:FindFirstChildOfClass('Humanoid')
+        if lp.Character ~= char then return end
+        local root = char:FindFirstChild('HumanoidRootPart')
+
+        task.spawn(function()
+            while task.wait() and (not lp.Character or lp.Character == char) do
+                if getgenv().desync and not char:FindFirstChild('AbsoluteImmortal') then
+                    local v901 = {}
+                    local ok1, afterimage = pcall(function()
+                        return _ReplicatedStorage.Resources.NinjaUlt.Afterimage_Despawn:Clone()
+                    end)
+                    local ok2, tpthing = pcall(function()
+                        return _ReplicatedStorage.Resources.VanishingKick.tpthing:Clone()
+                    end)
+                    if ok1 and afterimage then
+                        afterimage.Parent = root
+                        v901[1] = afterimage
+                        for _, pe in pairs(afterimage:GetChildren()) do
+                            if pe:IsA('ParticleEmitter') then
+                                pe.Enabled = true
+                                pe.Rate = 100
+                            end
+                        end
+                    end
+                    if ok2 and tpthing then
+                        tpthing.Parent = root
+                        v901[2] = tpthing
+                        tpthing.Enabled = true
+                        tpthing.Rate = 100
+                    end
+                    repeat
+                        if v901[1] and v901[1].Parent then
+                            v901[1].CFrame = root.CFrame
+                        end
+                        RunService.RenderStepped:Wait()
+                    until not getgenv().desync or char:FindFirstChild('AbsoluteImmortal')
+                    for _, v in pairs(v901) do
+                        pcall(function() v:Destroy() end)
+                    end
+                end
+            end
+        end)
+
+        task.spawn(function()
+            for _, part in pairs(char:GetDescendants()) do
+                if part:IsA('BasePart') and part ~= root and part.Transparency ~= 1
+                    and not part.Name:lower():find('hitbox') then
+                    task.spawn(function()
+                        while task.wait() and (not lp.Character or lp.Character == char) do
+                            if part and (InvisibilityActive or (getgenv().desync and not char:FindFirstChild('AbsoluteImmortal'))) then
+                                part.Transparency = 0.5
+                                repeat
+                                    RunService.RenderStepped:Wait()
+                                until not InvisibilityActive
+                                    and (not getgenv().desync or char:FindFirstChild('AbsoluteImmortal'))
+                                    or (lp.Character and lp.Character ~= char)
+                                part.Transparency = 0
+                            end
+                        end
+                    end)
+                end
+            end
+        end)
+    end
+
+    if lp.Character then task.spawn(_initDesyncEffects, lp.Character) end
+    lp.CharacterAdded:Connect(function(char) task.spawn(_initDesyncEffects, char) end)
+end)
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+
+pcall(function()
+    game.CoreGui.NoclipGui:Destroy()
+end)
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local lastSafeCFrame = nil
+local isTeleporting = false
+
+
+local TARGET_POS = Vector3.new(376.9, 441.2, -63.7)
+
+
+local noclipConnection = nil
+
+local function enableNoclip()
+    if not noclipConnection then
+        noclipConnection = RunService.Stepped:Connect(function()
+            local character = player.Character
+            if character then
+                for _, part in ipairs(character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
         end)
     end
 end
 
--- Tween dùng riêng cho Auto Gold
-local function tweenTo(hrp, targetPos)
-    if not hrp then return end
-    local timeVal = math.max(teleportDelay * 0.2, 0.15)
-    local tween = TweenService:Create(hrp, TweenInfo.new(timeVal, Enum.EasingStyle.Linear), {CFrame = CFrame.new(targetPos)})
-    tween:Play()
-    tween.Completed:Wait()
-end
-
--- LOGIC AUTO GOLD
-local function AutoGoldLoop()
-    while isAutoGold do
-        local char = LocalPlayer.Character
-        if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") then
-            local hrp = char.HumanoidRootPart
-            for i = 1, 8 do
-                if not isAutoGold then break end
-                PGStatus.Text = "Status: Farm Gold ("..i.."/9)"
-                tweenTo(hrp, GoldWaypoints[i])
-                task.wait(teleportDelay)
-            end
-            if isAutoGold then
-                PGStatus.Text = "Status: Claiming Reward..."
-                tweenTo(hrp, GoldWaypoints[9])
-                task.wait(2.0)
-                
-                PGStatus.Text = "Status: Resetting..."
-                if char.Humanoid.Health > 0 then char.Humanoid.Health = 0 end
-                repeat task.wait(0.5) until not isAutoGold or (LocalPlayer.Character and LocalPlayer.Character ~= char and LocalPlayer.Character:FindFirstChild("Humanoid") and LocalPlayer.Character.Humanoid.Health > 0)
-                task.wait(2)
-            end
-        else
-            task.wait(1)
-        end
+local function disableNoclip()
+    if noclipConnection then
+        noclipConnection:Disconnect()
+        noclipConnection = nil
     end
 end
 
--- LOGIC AUTO FARM CHEST (Đã fix nhả rương, chống rơi rớt hố)
-local chestBv, chestBg
-local function AutoFarmChestLoop()
-    while isAutoFarming do
-        local char = LocalPlayer.Character
-        local hum = char and char:FindFirstChild("Humanoid")
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        
-        if hrp and hum and hum.Health > 0 then
-            PGStatus.Text = "Status: Collecting Chests..."
+
+task.spawn(function()
+    while task.wait(0.1) do
+        local character = player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Humanoid") then
+            local hrp = character.HumanoidRootPart
+            local humanoid = character.Humanoid
             
-            if not chestBv or chestBv.Parent ~= hrp then
-                if chestBv then chestBv:Destroy() end
-                if chestBg then chestBg:Destroy() end
-                chestBv = Instance.new("BodyVelocity", hrp)
-                chestBv.MaxForce = Vector3.new(1e9, 1e9, 1e9)
-                chestBv.Velocity = Vector3.zero
-                chestBg = Instance.new("BodyGyro", hrp)
-                chestBg.MaxTorque = Vector3.new(1e9, 1e9, 1e9)
-                chestBg.P = 20000
-                chestBg.D = 500
-            end
-            
-            for i, pos in ipairs(ChestWaypoints) do
-                if not isAutoFarming or not hrp.Parent or hum.Health <= 0 then break end
+            if humanoid.Health > 0 then
+                local velocityMag = hrp.AssemblyLinearVelocity.Magnitude
                 
-                local startTick = tick()
-                while isAutoFarming and hrp.Parent and hum.Health > 0 do
-                    local dist = (pos - hrp.Position).Magnitude
-                    if dist <= 12 then break end 
-                    
-                    local dir = (pos - hrp.Position).Unit
-                    local moveSpeed = math.min(chestSpeed, dist * 15)
-                    
-                    chestBv.Velocity = dir * moveSpeed 
-                    chestBg.CFrame = CFrame.new(hrp.Position, pos)
-                    
-                    RunService.Heartbeat:Wait()
-                    if tick() - startTick > 15 then break end 
+                if humanoid.FloorMaterial ~= Enum.Material.Air and velocityMag < 100 then
+                    lastSafeCFrame = hrp.CFrame
                 end
+
                 
-                -- KHI ĐẾN ĐIỂM CUỐI CÙNG (CHẠM RƯƠNG)
-                if i == #ChestWaypoints and isAutoFarming and hrp.Parent and hum.Health > 0 then
-                    PGStatus.Text = "Status: Reached End. Claiming Chest..."
-                    
-                    -- Dừng toàn bộ gia tốc ngay lập tức để không bị bay quá đà
-                    hrp.AssemblyLinearVelocity = Vector3.zero
-                    
-                    -- Hủy lực kéo lơ lửng để "thả ra"
-                    if chestBv then chestBv:Destroy(); chestBv = nil end
-                    if chestBg then chestBg:Destroy(); chestBg = nil end
-                    
-                    -- BƯỚC QUAN TRỌNG: Tạm tắt Noclip để nhân vật va chạm được với đất (Không bị rớt void)
-                    ToggleNoclip(false)
-                    
-                    local waitStart = tick()
-                    while isAutoFarming and hrp.Parent and hum.Health > 0 do
-                        -- Chờ game xử lý nhận rương và Teleport nhân vật về khu vực ban đầu (Z < 1000)
-                        if hrp.Position.Z < 1000 or (tick() - waitStart > 15) then
-                            break
-                        end
-                        task.wait(0.5)
+                if not isTeleporting and lastSafeCFrame then
+                    local heightDiff = math.abs(hrp.Position.Y - lastSafeCFrame.Y)
+                    if heightDiff > 600 or hrp.Position.Y < (Workspace.FallenPartsDestroyHeight + 50) then
+                        isTeleporting = true
+                        task.delay(0.5, function()
+                            if character and character:FindFirstChild("HumanoidRootPart") then
+                                local currentHrp = character.HumanoidRootPart
+                                currentHrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                                currentHrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                                currentHrp.CFrame = lastSafeCFrame
+                            end
+                            task.wait(1)
+                            isTeleporting = false
+                        end)
                     end
-                    
-                    -- Bật lại Noclip cho vòng lặp tiếp theo
-                    if isAutoFarming then
-                        ToggleNoclip(true)
-                    end
-                    task.wait(2) 
                 end
             end
-        else
-            if chestBv then chestBv:Destroy(); chestBv = nil end
-            if chestBg then chestBg:Destroy(); chestBg = nil end
-            task.wait(1)
         end
     end
-    -- Dọn dẹp nếu người dùng tắt nút
-    if chestBv then chestBv:Destroy(); chestBv = nil end
-    if chestBg then chestBg:Destroy(); chestBg = nil end
-    ToggleNoclip(false)
-end
-
-AutoFarmBtn.MouseButton1Click:Connect(function()
-    isAutoFarming = not isAutoFarming; animateToggle(AutoFarmBtn, AutoFarmDot, isAutoFarming)
-    if isAutoFarming then ToggleNoclip(true); task.spawn(AutoFarmChestLoop) else PGStatus.Text = "Status: Idle"; if not isAutoGold then ToggleNoclip(false) end end
 end)
 
-LocalPlayer.Idled:Connect(function() if isAntiAfk then VirtualUser:CaptureController(); VirtualUser:ClickButton2(Vector2.new()) end end)
-AntiAfkBtn.MouseButton1Click:Connect(function() isAntiAfk = not isAntiAfk; animateToggle(AntiAfkBtn, AntiAfkDot, isAntiAfk) end)
 
-local function getVehicleTarget()
-    local char = LocalPlayer.Character
-    if not char then return nil end
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    if hum and hum.SeatPart then return hum.SeatPart.AssemblyRootPart or (hum.SeatPart.Parent and hum.SeatPart.Parent.PrimaryPart) or hum.SeatPart end
-    return nil
+local guiName = "ManualAntiStuckUI"
+if CoreGui:FindFirstChild(guiName) then
+    CoreGui[guiName]:Destroy()
 end
 
-FlyBtn.MouseButton1Click:Connect(function() isFlying = not isFlying; animateToggle(FlyBtn, FlyDot, isFlying) end)
-AutoFwdBtn.MouseButton1Click:Connect(function() isAutoFwd = not isAutoFwd; animateToggle(AutoFwdBtn, AutoFwdDot, isAutoFwd) end)
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = guiName
+screenGui.Parent = (gethui and gethui()) or CoreGui
 
-RunService.RenderStepped:Connect(function()
-    if isFlying then
-        local target = getVehicleTarget()
-        if target then
-            if not bv or bv.Parent ~= target then
-                if bv then bv:Destroy() end; if bg then bg:Destroy() end
-                bv = Instance.new("BodyVelocity", target); bv.MaxForce = Vector3.new(1e9, 1e9, 1e9)
-                bg = Instance.new("BodyGyro", target); bg.MaxTorque = Vector3.new(1e9, 1e9, 1e9); bg.P = 20000; bg.D = 500
+local teleportBtn = Instance.new("TextButton")
+teleportBtn.Size = UDim2.new(0, 20, 0, 20)
+teleportBtn.Position = UDim2.new(0.5, 0, 0.2, 0)
+teleportBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+teleportBtn.BorderColor3 = Color3.fromRGB(200, 200, 200)
+teleportBtn.Text = "T"
+teleportBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+teleportBtn.Font = Enum.Font.SourceSansBold
+teleportBtn.TextSize = 14
+teleportBtn.Parent = screenGui
+teleportBtn.Active = true
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 4)
+corner.Parent = teleportBtn
+
+
+teleportBtn.MouseButton1Click:Connect(function()
+    local character = player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        local hrp = character.HumanoidRootPart
+        
+        
+        enableNoclip()
+        
+        
+        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+        hrp.CFrame = CFrame.new(TARGET_POS)
+        
+        
+        task.spawn(function()
+            local timer = 0
+            while timer < 30 do 
+                task.wait(0.1)
+                timer = timer + 1
+                
+                if character and character:FindFirstChild("HumanoidRootPart") then
+                    local currentPos = character.HumanoidRootPart.Position
+                    
+                    if (currentPos - TARGET_POS).Magnitude <= 10 then
+                        break
+                    end
+                end
             end
-            local cam = workspace.CurrentCamera; bg.CFrame = cam.CFrame
-            local jx, jy = joyV.X, joyV.Y
-            if math.abs(jx) < 0.15 then jx = 0 end; if math.abs(jy) < 0.15 then jy = 0 end
-            local forwardInput = -jy
-            if isAutoFwd and forwardInput == 0 then forwardInput = 1 end
-            local moveDir = (cam.CFrame.RightVector * jx) + (cam.CFrame.LookVector * forwardInput)
-            bv.Velocity = moveDir * currentSpeed
-            if LocalPlayer.Character then for _, p in pairs(LocalPlayer.Character:GetChildren()) do if p:IsA("BasePart") and p.CanCollide then p.CanCollide = false end end end
-        else
-            if bv then bv:Destroy(); bv = nil end; if bg then bg:Destroy(); bg = nil end
-        end
-    else
-        if bv then bv:Destroy(); bv = nil end; if bg then bg:Destroy(); bg = nil end
+            
+            task.wait(0.2) 
+            disableNoclip() 
+        end)
+    end
+end)
+
+
+local dragging = false
+local dragInput, mousePos, framePos
+
+teleportBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        mousePos = input.Position
+        framePos = teleportBtn.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+teleportBtn.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - mousePos
+        teleportBtn.Position = UDim2.new(
+            framePos.X.Scale, framePos.X.Offset + delta.X, 
+            framePos.Y.Scale, framePos.Y.Offset + delta.Y
+        )
     end
 end)
