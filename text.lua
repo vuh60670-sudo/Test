@@ -22,9 +22,7 @@
                         end
                         for i, Point in Path do
                             local Nearby = 0
-                            -- ⬇️ FIXED LINE ⬇️
                             local Directions = {{Point.row - 1, Point.col}, {Point.row + 1, Point.col}, {Point.row, Point.col - 1}, {Point.row, Point.col + 1}}
-                            -- ⬆️ FIXED LINE ⬆️
                             for i, Data in Directions do
                                 local Row = Data[1]
                                 local Col = Data[2]
@@ -171,6 +169,7 @@
                 end
             end
         },
+
         ["AutoHatchet"] = {
             ["DisplayDescription"] = "Uses the hatchet ability when a killer is near you",
             ["DisplayTitle"] = '<stroke thickness="0.7">Jane Doe</stroke> Auto Hatchet',
