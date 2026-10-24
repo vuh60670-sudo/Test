@@ -2462,4 +2462,1007 @@ ModulesOptions = {
             return u8
         end
         function u1.OnUpdate(p14)
-            p14.Instance.D
+            p14.Instance.DropdownFrame.ChosenValue.Title.Text = p14.Value
+            p14.Instance.DropdownFrame.Options.Visible = false
+            p14.Instance.DropdownFrame.DropdownArrow.Rotation = 0
+            p14.DropdownVisible = false
+        end
+        return u1
+    ]=],
+    ["Number"] = [=[
+        local u1 = {}
+        u1.__index = u1
+        local PlaySound = ({...})[1]
+        function u1.CreateSettingUI(_, u2, p3, u4)
+            if not u2 then
+                u2 = Instance.new("NumberValue")
+                u2.Name = "SettingValue"
+            end
+            local u7 = setmetatable({SettingValue = u2}, u1)
+            u7.Instance = p3 or game:GetService("ReplicatedStorage").Systems.Player.UI.Menus.Settings.Templates.Number.Slider:Clone()
+            u7.Value = u2.Value
+            local u8 = u7.Instance.DragBar
+            local u9 = u8.Dragger
+            local u10 = game.Players.LocalPlayer:GetMouse()
+            local u11 = u2:GetAttribute("MinValue")
+            u2:GetAttributeChangedSignal("MinValue"):Connect(function() u11 = u2:GetAttribute("MinValue") end)
+            local u12 = u2:GetAttribute("MaxValue")
+            u2:GetAttributeChangedSignal("MaxValue"):Connect(function() u12 = u2:GetAttribute("MaxValue") end)
+            local u13 = u2:GetAttribute("Step")
+            u2:GetAttributeChangedSignal("Step"):Connect(function() u13 = u2:GetAttribute("Step") end)
+            u7.__displayValue = Instance.new("NumberValue")
+            u7.__displayValue.Name = "__displayValue"
+            u7.__displayValue.Value = u2.Value
+            u7.__displayValue.Parent = u7.Instance
+            u7.__displayValue:GetPropertyChangedSignal("Value"):Connect(function()
+                local v14 = u9.Title
+                local v15 = u7.__displayValue.Value
+                local v16 = tonumber(string.format("%.10g", math.floor((v15/u13) + 0.5) * u13))
+                v14.Text = v16
+            end)
+            local v17 = u9.Title
+            local v18 = u7.__displayValue.Value
+            local v19 = tonumber(string.format("%.10g", math.floor((v18/u13) + 0.5) * u13))
+            v17.Text = tostring(v19)
+            u9.MouseButton1Down:Connect(function()
+                u7.Dragging = true
+                PlaySound("switch0" .. tostring(math.random(1, 4)))
+                while task.wait() and u7.Dragging do
+                    local v20 = u10.X
+                    local v21 = u8.AbsoluteSize.X
+                    local v22 = (v20 - u8.AbsolutePosition.X) / v21
+                    local v23 = u11
+                    local v24 = u12
+                    local v25 = v23 + (v24 - v23) * v22
+                    local v26 = math.clamp(v25, v23, v24)
+                    local RoundedNumber = tonumber(string.format("%.10g", math.floor((v26/u13) + 0.5) * u13))
+                    local v27 = u13
+                    if v27 ~= 0 or not v26 then
+                        local v28 = (v26 + v27 / 2) / v27
+                        v26 = math.floor(v28) * v27
+                    end
+                    if u7.Value ~= RoundedNumber then
+                        PlaySound("tick0"..tostring(math.random(1,3)), {Volume = 0.025})
+                        u7.Value = RoundedNumber
+                        u7:OnUpdate()
+                        if u7.__updatedEvent then u7.__updatedEvent:Fire() end
+                    end
+                end
+            end)
+            game.UserInputService.InputEnded:Connect(function(p29)
+                if u7.Dragging then
+                    if p29.UserInputType == Enum.UserInputType.MouseButton1 or (p29.UserInputType == Enum.UserInputType.Touch or p29.UserInputType == Enum.UserInputType.Gamepad1 and p29.KeyCode == Enum.KeyCode.ButtonR2) then
+                        u7.Dragging = false
+                        PlaySound("switch0".. tostring(math.random(1,4)))
+                        if u2.Name ~= "SettingValue" and u2.Name ~= "Value" then u2.Value = u7.Value end
+                        u7:OnUpdate()
+                        if u4 then u4(u7.Value) end
+                    end
+                end
+            end)
+            return u7
+        end
+        function u1.OnUpdate(p30)
+            local v31 = p30.SettingValue:GetAttribute("MinValue")
+            local v32 = p30.SettingValue:GetAttribute("MaxValue")
+            local v33 = (p30.Value - v31) / (v32 - v31)
+            local v34 = math.clamp(v33, 0, 1)
+            local v35 = p30.Instance.DragBar.Dragger
+            local v36 = math.clamp(v34, 0, 1)
+            game.TweenService:Create(v35, TweenInfo.new(0.1), {Position = UDim2.fromScale(v36, 0.5)}):Play()
+            game.TweenService:Create(p30.__displayValue, TweenInfo.new(0.1), {Value = p30.Value}):Play()
+        end
+        return u1
+    ]=],
+    ["Keybind"] = [=[
+        local u1 = {}
+        u1.__index = u1
+        local PlaySound = ({...})[1]
+        function u1.CreateSettingUI(_, u2, p3)
+            if not u2 then
+                u2 = Instance.new("StringValue")
+                u2.Name = "SettingValue"
+            end
+            local u7 = setmetatable({SettingValue = u2}, u1)
+            u7.Instance = p3 or game:GetService("ReplicatedStorage").Systems.Player.UI.Menus.Settings.Templates.Keybind.KeybindFrame:Clone()
+            u7.IsKeybind = true
+            local u8 = {"None","Unknown","MouseMovement","Focus","Accelerometer","TextInput"}
+            u7.Instance.KeybindButton.MouseButton1Click:Connect(function()
+                PlaySound("click")
+                if u1.__currentConnection then return
+                elseif not u7.__debounce then
+                    u7.__debounce = true
+                    task.delay(0.25, function() u7.__debounce = nil end)
+                    task.wait(0.05)
+                    u7.Instance.KeybindButton.CurrentBind.Title.Text = "..."
+                    u1.__currentConnection = game.UserInputService.InputEnded:Connect(function(p9)
+                        if u1.__currentConnection then
+                            local v10 = p9.KeyCode == Enum.KeyCode.Unknown and p9.UserInputType.Name or p9.KeyCode.Name
+                            if table.find(u8, v10) or p9.KeyCode == Enum.KeyCode.Unknown and u2:GetAttribute("KeycodeOnly") then
+                                PlaySound("error")
+                                return
+                            end
+                            local v11 = require(game.ReplicatedStorage.Initializer)
+                            for v12, v13 in pairs(v11.PlayerSettings) do
+                                if v13.IsKeybind and (v13.Value == v10 and v12 ~= u2.Name) then
+                                    PlaySound("error")
+                                    return
+                                end
+                            end
+                            u2.Value = v10
+                            PlaySound("switch0".. tostring(math.random(1,4)))
+                            if u1.__currentConnection then
+                                u1.__currentConnection:Disconnect()
+                                u1.__currentConnection = nil
+                            end
+                            u7.Instance.KeybindButton.CurrentBind.Title.Text = v10
+                        end
+                    end)
+                end
+            end)
+            return u7
+        end
+        function u1.OnUpdate(p16) p16.Instance.KeybindButton.CurrentBind.Title.Text = p16.Value end
+        return u1
+    ]=],
+    ["Bool"] = [=[
+        local u1 = {}
+        u1.__index = u1
+        local PlaySound = ({...})[1]
+        function u1.CreateSettingUI(_, u2, p3)
+            if not u2 then
+                u2 = Instance.new("BoolValue")
+                u2.Name = "SettingValue"
+            end
+            local u5 = setmetatable({SettingValue = u2}, u1)
+            u5.isDebounce = false
+            u5.Instance = p3 or game:GetService("ReplicatedStorage").Systems.Player.UI.Menus.Settings.Templates.Bool.Checkbox:Clone()
+            u5.Instance.CheckboxButton.MouseButton1Click:Connect(function()
+                if not u5.isDebounce then
+                    u5.isDebounce = true
+                    task.delay(0.25, function() u5.isDebounce = false end)
+                    PlaySound("switch0".. tostring(math.random(1,4)))
+                    u2.Value = not u2.Value
+                end
+            end)
+            return u5
+        end
+        function u1.OnUpdate(p6)
+            p6.Value = p6.SettingValue.Value
+            p6.Instance.CheckboxButton.Checked.Visible = p6.Value
+        end
+        return u1
+    ]=]
+}
+
+local SettingsData
+local Contents
+local Templates
+
+local function SetupSettingUI(SettingInstance, TabSectionFolder, TableFeature)
+    local LayoutOrder = SettingInstance:GetAttribute("LayoutOrder")
+    local DisplayTitle = SettingInstance:GetAttribute("DisplayTitle")
+    if LayoutOrder and DisplayTitle then
+        if SettingInstance:IsA("Folder") then
+            local Seperator = Templates.Seperator:Clone()
+            Seperator.Name = SettingInstance.Name
+            Seperator.LayoutOrder = LayoutOrder * 100 + (TabSectionFolder and TabSectionFolder:GetAttribute("LayoutOrder") * 100 or 0)
+            SettingInstance:GetAttributeChangedSignal("LayoutOrder"):Connect(function()
+                if SettingInstance.Name ~= "EnviromentFunctions" then
+                    Seperator.LayoutOrder = SettingInstance:GetAttribute("LayoutOrder") * 100 + (TabSectionFolder and TabSectionFolder:GetAttribute("LayoutOrder") * 100 or 0)
+                end
+            end)
+            Seperator.Title.Text = DisplayTitle
+            SettingInstance:GetAttributeChangedSignal("DisplayTitle"):Connect(function()
+                if SettingInstance.Name ~= "EnviromentFunctions" then
+                    Seperator.Title.Text = SettingInstance:GetAttribute("DisplayTitle")
+                end
+            end)
+            Seperator.Parent = Contents
+        elseif SettingInstance:IsA("ValueBase") then
+            local SettingType = Templates:FindFirstChild(SettingInstance:GetAttribute("TemplateType") or string.gsub(SettingInstance.ClassName, "Value", ""))
+            for i,Child in pairs(Templates:GetChildren()) do
+                if SettingInstance.Parent.Name:find(Child.Name) then SettingType = Child end
+            end
+            if SettingType then
+                local ModuleType = ModulesOptions[tostring(SettingType.Name)]
+                SettingType = loadstring(tostring(ModuleType))(PlaySound)
+            end
+            if SettingType and SettingType.CreateSettingUI then
+                local SettingUI = SettingType:CreateSettingUI(SettingInstance)
+                SettingUI.Instance.Name = SettingInstance.Name
+                TabSectionFolder = SettingInstance.Parent
+                SettingUI.Instance.LayoutOrder = LayoutOrder + (TabSectionFolder and TabSectionFolder:GetAttribute("LayoutOrder") * 100 or 0)
+                TabSectionFolder:GetAttributeChangedSignal("LayoutOrder"):Connect(function()
+                    SettingUI.Instance.LayoutOrder = SettingInstance:GetAttribute("LayoutOrder") + (TabSectionFolder and TabSectionFolder:GetAttribute("LayoutOrder") * 100 or 0)
+                end)
+                SettingUI.Instance.Parent = Contents
+                local Requirement = SettingInstance:GetAttribute("Requirement")
+                local BindableCallCheckRequirement = Instance.new("BindableEvent")
+                local Requirements = {}
+                BindableCallCheckRequirement.Event:Connect(function()
+                    local AllTrue = true
+                    for i,v in pairs(Requirements) do
+                        if not v then AllTrue = false break end
+                    end
+                    SettingUI.Instance.Visible = AllTrue
+                end)
+                if type(Requirement) == "string" and Requirement:find("|") then
+                    for i,v in (string.split(Requirement, "|")) do Requirements[v] = false end
+                else
+                    Requirements = Requirement and {[Requirement] = false} or {}
+                end
+                for Requirement,v in pairs(Requirements) do
+                    Requirements[Requirement] = false
+                    local InstanceValue = type(Requirement) == "string" and PlusFolderSettings:FindFirstChild(Requirement, true) or nil
+                    if InstanceValue and Requirement ~= true then
+                        Requirements[Requirement] = InstanceValue.Value
+                        InstanceValue:GetPropertyChangedSignal("Value"):Connect(function()
+                            Requirements[Requirement] = InstanceValue.Value
+                            BindableCallCheckRequirement:Fire()
+                        end)
+                    elseif Requirement == true then
+                        Requirements[Requirement] = false
+                        BindableCallCheckRequirement:Fire()
+                    elseif Requirement:find("=") then
+                        local SplitData = string.split(Requirement, "=")
+                        local Value = SplitData[2]
+                        local function BindChecker(CheckerInstance)
+                            local function Update()
+                                if tostring(CheckerInstance.Value) == Value or tostring(CheckerInstance.Value):lower() == "both" or tostring(CheckerInstance.Value):lower() == "all" then
+                                    Requirements[Requirement] = true
+                                else
+                                    Requirements[Requirement] = false
+                                end
+                                BindableCallCheckRequirement:Fire()
+                            end
+                            Update()
+                            CheckerInstance:GetPropertyChangedSignal("Value"):Connect(Update)
+                        end
+                        local CheckerInstance = PlusFolderSettings:FindFirstChild(SplitData[1], true)
+                        if CheckerInstance then BindChecker(CheckerInstance)
+                        else
+                            PlusFolderSettings.DescendantAdded:Connect(function(Child)
+                                if Child.Name == SplitData[1] and Child:IsA("ValueBase") then BindChecker(Child) end
+                            end)
+                        end
+                    elseif Requirement:find("~") then
+                        local SplitData = string.split(Requirement, "~")
+                        local Value = SplitData[2]
+                        local function BindChecker(CheckerInstance)
+                            local function Update()
+                                if tostring(CheckerInstance.Value) ~= Value then
+                                    Requirements[Requirement] = true
+                                else
+                                    Requirements[Requirement] = false
+                                end
+                                BindableCallCheckRequirement:Fire()
+                            end
+                            Update()
+                            CheckerInstance:GetPropertyChangedSignal("Value"):Connect(Update)
+                        end
+                        local CheckerInstance = PlusFolderSettings:FindFirstChild(SplitData[1], true)
+                        if CheckerInstance then BindChecker(CheckerInstance)
+                        else
+                            PlusFolderSettings.DescendantAdded:Connect(function(Child)
+                                if Child.Name == SplitData[1] and Child:IsA("ValueBase") then BindChecker(Child) end
+                            end)
+                        end
+                    elseif Requirement:find(":") then
+                        local SplitData = string.split(Requirement, ":")
+                        local Value = SplitData[2]
+                        local ToCheck = SplitData[1]
+                        if ToCheck:lower():find("killer") then
+                            Requirements[Requirement] = KillerAssets and (KillerAssets:FindFirstChild(Value) or KillerAssets:FindFirstChild("!"..Value)) and true or false
+                        elseif ToCheck:lower():find("survivor") then
+                            Requirements[Requirement] = SurvivorAssets and (SurvivorAssets:FindFirstChild(Value) or SurvivorAssets:FindFirstChild("!"..Value)) and true or false
+                        elseif ToCheck:lower():find("gameid") then
+                            Requirements[Requirement] = Value:gsub("[^%d]","") ~= "" and game.GameId == tonumber(Value:gsub("[^%d]",""))
+                        elseif ToCheck:lower():find("placeid") then
+                            Requirements[Requirement] = Value:gsub("[^%d]","") ~= "" and game.PlaceId == tonumber(Value:gsub("[^%d]",""))
+                        elseif ToCheck:lower():find("status") or ToCheck:lower():find("effect") then
+                            Requirements[Requirement] = StatusEffects and StatusEffects:FindFirstChild(Value,true) and true or false
+                        end
+                        BindableCallCheckRequirement:Fire()
+                    end
+                end
+                PlusFolderSettings.DescendantAdded:Connect(function(Child)
+                    if not Child:IsA("ValueBase") then return end
+                    for Requirement,v in pairs(Requirements) do
+                        if type(Requirement) == "string" and not Requirement:find("=") and not Requirement:find("~") and not Requirement:find(":") and Requirement == Child.Name then
+                            Requirements[Requirement] = Child.Value
+                            Child:GetPropertyChangedSignal("Value"):Connect(function()
+                                Requirements[Requirement] = Child.Value
+                                BindableCallCheckRequirement:Fire()
+                            end)
+                            BindableCallCheckRequirement:Fire()
+                        end
+                    end
+                end)
+                BindableCallCheckRequirement:Fire()
+                SettingInstance:GetAttributeChangedSignal("Requirement"):Connect(function()
+                    Requirement = SettingInstance:GetAttribute("Requirement")
+                    Requirements = {}
+                    if type(Requirement) == "string" and Requirement:find("|") then
+                        for i,v in (string.split(Requirement, "|")) do Requirements[v] = false end
+                    else
+                        Requirements = Requirement and {[Requirement] = false} or {}
+                    end
+                    BindableCallCheckRequirement:Fire()
+                end)
+                local SettingFeature = TableFeature
+                local ResetButton = Templates.Reset:Clone()
+                ResetButton.Parent = SettingUI.Instance
+                ResetButton.MouseButton1Click:Connect(function()
+                    SettingInstance.Value = SettingFeature["DefaultInstanceValue"]
+                    PlaySound("switch0".. tostring(math.random(1,4)))
+                end)
+                ResetButton.MouseEnter:Connect(function() PlaySound("hover") end)
+                ResetButton.MouseLeave:Connect(function() PlaySound("hoverEnd") end)
+                SettingUI.Instance:FindFirstChild("SettingName", true).Text = (DisplayTitle or "")
+                SettingInstance:GetAttributeChangedSignal("DisplayTitle"):Connect(function()
+                    SettingUI.Instance:FindFirstChild("SettingName", true).Text = (SettingInstance:GetAttribute("DisplayTitle") or "")
+                end)
+                SettingUI.Instance:FindFirstChild("SettingDesc", true).Text = (SettingInstance:GetAttribute("DisplayDescription") or "")
+                SettingInstance:GetAttributeChangedSignal("DisplayDescription"):Connect(function()
+                    SettingUI.Instance:FindFirstChild("SettingDesc", true).Text = (SettingInstance:GetAttribute("DisplayDescription") or "")
+                end)
+                SettingUI.__updatedEvent = Instance.new("BindableEvent", SettingUI.Instance)
+                SettingUI.Updated = SettingUI.__updatedEvent.Event
+                if SettingFeature then
+                    if SettingFeature.CustomSetup then task.spawn(SettingFeature.CustomSetup,SettingFeature) end
+                    SettingUI.Updated:Connect(function(Starting)
+                        if SettingFeature.ScriptFunction and SettingUI.Value ~= nil then
+                            SettingFeature:ScriptFunction(SettingUI.Value,Starting or false)
+                        end
+                    end)
+                    CharacterAddedBindable.Event:Connect(function()
+                        if SettingFeature.CharacterAdded then task.spawn(SettingFeature.CharacterAdded,SettingFeature) end
+                    end)
+                    if SettingFeature.OnLoop then
+                        ThreadBindable.Event:Connect(function() SettingFeature:OnLoop(SettingFeature) end)
+                    end
+                end
+                SettingUI.Value = SettingInstance.Value
+                if SettingUI.OnUpdate then SettingUI:OnUpdate() end
+                SettingUI.__updatedEvent:Fire(true)
+                SettingInstance:GetPropertyChangedSignal("Value"):Connect(function()
+                    SettingUI.Value = SettingInstance.Value
+                    if SettingUI.OnUpdate then SettingUI:OnUpdate() end
+                    SettingUI.__updatedEvent:Fire()
+                end)
+                SettingsData.PlayerSettings[SettingInstance.Name] = SettingUI
+                task.wait()
+            end
+        end
+    else
+        return
+    end
+end
+
+local function HandleUIFeatures(TabName,TabContents)
+    local Folder = Instance.new("Folder")
+    Folder.Name = TabName
+    Folder.Parent = PlusFolderSettings
+    if not TabContents["TabAttributes"] then
+        Folder:Destroy()
+        warn(`Failed to create section : {TabName}\nERROR: There is no TabAttributes attached to the section`)
+        return
+    end
+    for Attribute, Value in TabContents["TabAttributes"] do
+        Folder:SetAttribute(Attribute, Value)
+    end
+    for SettingName, SettingData in TabContents do
+        task.spawn(function()
+            if SettingName == "TabAttributes" then return end
+            local NewInstance = Instance.new(SettingData.InstanceType)
+            local TableEvent = table.clone(SettingData)
+            table.clear(SettingData)
+            setmetatable(SettingData,{
+                __index = TableEvent,
+                __newindex = function(Table,i,v)
+                    TableEvent[i] = v
+                    if i == "DisplayDescription" or i == "DisplayTitle" or i == "LayoutOrder" then
+                        NewInstance:SetAttribute("DisplayDescription",type(TableEvent["DisplayDescription"]) == type("") and TableEvent["DisplayDescription"] or "")
+                        NewInstance:SetAttribute("DisplayTitle",type(TableEvent["DisplayTitle"]) == type("") and TableEvent["DisplayTitle"] or "Untitled Feature")
+                        NewInstance:SetAttribute("LayoutOrder",type(TableEvent["LayoutOrder"]) == type(1) and TableEvent["LayoutOrder"] or #NewInstance:GetAttribute("DisplayTitle"))
+                    end
+                    if i == "Requirement" then
+                        NewInstance:SetAttribute("Requirement",(type(TableEvent["Requirement"]) == type(true) or TableEvent["Requirement"] == type("") and TableEvent["Requirement"]))
+                    end
+                end
+            })
+            NewInstance.Name = SettingName
+            NewInstance.Value = SettingData.DefaultInstanceValue
+            local TableData = HttpService:JSONDecode(ReturnData("Data.txt", true))
+            if SettingData["Savable"] and FeatureLoadout["EnviromentFunctions"]["files"]["DefaultInstanceValue"] then
+                if TableData[SettingName] ~= nil and NewInstance:GetAttribute("Requirement") ~= true then
+                    NewInstance.Value = TableData[SettingName]
+                end
+                NewInstance:GetPropertyChangedSignal("Value"):Connect(function()
+                    if NewInstance:GetAttribute("Requirement") == true or not SettingData["Savable"] then return end
+                    local TableData2 = HttpService:JSONDecode(ReturnData("Data.txt", true))
+                    TableData2[SettingName] = SettingData.DefaultInstanceValue == NewInstance.Value and nil or NewInstance.Value
+                    if FeatureLoadout["EnviromentFunctions"]["files"]["DefaultInstanceValue"] then
+                        ChangeData("Data.txt",HttpService:JSONEncode(TableData2),true)
+                    end
+                end)
+            elseif not FeatureLoadout["EnviromentFunctions"]["files"]["DefaultInstanceValue"] and SettingData["Savable"] and not WarnedAboutFilesCompatability then
+                WarnedAboutFilesCompatability = true
+                ColoredPrint("Failed to load a savable feature.\nIf this bothers you then you should use a different executor that supports 'writefile' and 'readfile'", "info", Color3.new(1,0.25,0))
+            end
+            if SettingData["DisplayDescription"] then
+                SettingData.DisplayDescription = SettingData.DisplayDescription:gsub("%(NO FUNCTIONALITY%)", RichTextGradientColor("(NO FUNCTIONALITY)",{Color3.fromRGB(255, 83, 53), Color3.fromRGB(255, 123, 0),Color3.fromRGB(255, 83, 53)}))
+            end
+            SettingData["Instance"] = NewInstance
+            NewInstance:SetAttribute("DisplayDescription",SettingData["DisplayDescription"] or "")
+            NewInstance:SetAttribute("DisplayTitle",SettingData["DisplayTitle"] or "Untitled Feature")
+            NewInstance:SetAttribute("LayoutOrder",SettingData["LayoutOrder"] or #NewInstance:GetAttribute("DisplayTitle"))
+            NewInstance:SetAttribute("Requirement",SettingData["Requirement"])
+            if SettingData["ExtraData"] then
+                for ExtraDataIndex, ExtraDataValue in SettingData.ExtraData do
+                    NewInstance:SetAttribute(ExtraDataIndex, ExtraDataValue)
+                end
+            end
+            NewInstance.Parent = Folder
+            SetupSettingUI(NewInstance,Folder,SettingData)
+        end)
+    end
+    SetupSettingUI(Folder)
+    return Folder
+end
+
+local Initializer = {}
+function Initializer.Start()
+    SettingsData = {}
+    SettingsData.PlayerSettings = {}
+    Initializer.SettingsMenu = MenuData:CreateSidebarMenu("Plus", PlusMenu)
+    if NewUIVersion then
+        PlusMenu:Destroy()
+        PlusMenu = Initializer.SettingsMenu.Menu
+    end
+    Contents = Initializer.SettingsMenu.Menu.SettingsContainer.Contents
+    Templates = ReplicatedStorage.Systems.Player.UI.Menus.Settings.Templates
+    local PluginsFolderDir = "NaikoScript/ForsakenPlus/Plugins"
+    local FilterDir = PluginsFolderDir:gsub("/","\\") .. "\\"
+    local PluginDefaultSettings = { PluginVersion = "1.0", PluginName = "Plugin", PluginCredits = "Someone", HidePluginInfoTab = false }
+    if FeatureLoadout["EnviromentFunctions"]["files"]["DefaultInstanceValue"] then
+        local PluginFiles = isfolder(PluginsFolderDir) and listfiles(PluginsFolderDir) or nil
+        if PluginFiles then
+            local StartTime = workspace.DistributedGameTime
+            for i,v in PluginFiles do
+                local PluginFileData = ReturnData(v,false)
+                local FeatureErrors = 0
+                if string.gsub(PluginFileData,"[\n ]",""):sub(1,7) == "return{" then
+                    local Plugin,err = loadstring(PluginFileData)
+                    if Plugin == nil then
+                        task.spawn(error,`Failed to load Plugin : {v:gsub(FilterDir,"")}\n{err}`,5)
+                        continue
+                    end
+                    local suc,err = pcall(function()
+                        setfenv(Plugin, getfenv())
+                        Features,PluginSettings = Plugin()
+                    end)
+                    if not suc then
+                        task.spawn(error,`Failed to load Plugin : {v:gsub(FilterDir,"")}\n{err}`,5)
+                        continue
+                    end
+                    if typeof(Features) == typeof({}) then
+                        for TabName, TabContents in Features do
+                            if type(TabName) == type("") and typeof(TabContents) == typeof({}) then
+                                FeatureLoadout[TabName] = FeatureLoadout[TabName] or {}
+                                for FeatureName,FeatureData in TabContents do
+                                    if FeatureName == "TabAttributes" and TabName == "EnviromentFunctions" then continue end
+                                    if (FeatureLoadout[TabName][FeatureName] and FeatureData.InstanceType == FeatureLoadout[TabName][FeatureName].InstanceType) or not FeatureLoadout[TabName][FeatureName] then
+                                        FeatureLoadout[TabName][FeatureName] = FeatureData
+                                    else
+                                        FeatureErrors += 1
+                                        warn(`Failed to load {TabName} from {v:gsub(FilterDir,"")}\nERROR: to override the InstanceType must be the same as the original feature`)
+                                    end
+                                end
+                            else
+                                FeatureErrors += 1
+                                warn(`Failed to load {TabName} from {v:gsub(FilterDir,"")}\nERROR: Tab Name is not a string or Tab Contents is not a table`)
+                            end
+                        end
+                        if PluginSettings and type(PluginSettings) == type({}) then
+                            for i,v in PluginDefaultSettings do
+                                PluginSettings[i] = PluginSettings[i] or v
+                            end
+                            if not PluginSettings["HidePluginInfoTab"] then
+                                FeatureLoadout[PluginSettings["PluginName"] .. HttpService:GenerateGUID(false):sub(1,7)] = {
+                                    ["TabAttributes"] = {
+                                        ["DisplayTitle"] = string.format(
+                                            "%s Made by %s | %s",
+                                            PluginSettings["PluginName"],
+                                            PluginSettings["PluginCredits"],
+                                            RichTextGradientColor("V"..PluginSettings["PluginVersion"],{Color3.fromRGB(87, 160, 255),Color3.fromRGB(0, 132, 255)})
+                                        ),
+                                        ["LayoutOrder"] = 1000
+                                    }
+                                }
+                            end
+                        end
+                    else
+                        warn(`Failed to load Plugin : {v:gsub(FilterDir,"")}\nERROR: The features returned is not a table value`)
+                        continue
+                    end
+                else
+                    warn(`Failed to load Plugin : {v:gsub(FilterDir,"")} | This is for security. If you made this plugin please read the documentation.\nERROR: Return is not at the start of the first line without anything behind it and make sure it is infact correct`)
+                    continue
+                end
+                if FeatureErrors > 0 then
+                    ColoredPrint(`Loaded Plugin : <b>{v:gsub(FilterDir,"")}</b> with {FeatureErrors} Feature Error(s)`,"info",Color3.fromRGB(251, 109, 43))
+                else
+                    ColoredPrint(`Loaded Plugin : <b>{v:gsub(FilterDir,"")}</b> successfully`,"suc",Color3.fromRGB(193,251,43))
+                end
+            end
+        end
+    end
+    for TabName, TabContents in FeatureLoadout do
+        task.spawn(HandleUIFeatures,TabName,TabContents)
+    end
+    task.spawn(function()
+        if game.GameId == 6331902150 then
+            local JsonVersionData
+            task.delay(5,function()
+                if not JsonVersionData then
+                    ColoredPrint("Getting game version info is taking longer than usual.\nRovalra API has not responded in expected time.","warn")
+                end
+                task.wait(12)
+                if not JsonVersionData then
+                    ColoredPrint(`Since it still has not gotten a response API still (after 17 seconds)\nYou can Manually check if the game has updated before the script has!\n(Last Script Update/Test : {GameVersionForScript})`,"info")
+                end
+            end)
+            JsonVersionData = (game:HttpGet("https://apis.rovalra.com/v1/games/history?place_id=18687417158"))
+            if not JsonVersionData then
+                ColoredPrint(`Failed to get game version info.\n Automatic update check failed.\n `)
+                return
+            end
+            local Success,TableVersionData = pcall(function() return HttpService:JSONDecode(tostring(JsonVersionData)) end)
+            local CurrentGameVersion = (Success and TableVersionData and type(TableVersionData) == "table" and TableVersionData["history"] and TableVersionData["history"][1] and TableVersionData["history"][1]["first_seen"]) or GameVersionForScript
+            CurrentGameVersion = CurrentGameVersion:sub(1,10)
+            local y,m,d = GameVersionForScript:match("(%d+)-(%d+)-(%d+)")
+            local ThenTime = os.time{year=y, month=m, day=d}
+            y,m,d = CurrentGameVersion:match("(%d+)-(%d+)-(%d+)")
+            local CurrentTime = os.time{year=y, month=m, day=d}
+            local DaysSinceScriptUpdate = math.floor(math.abs(ThenTime - os.time()) / 86400)
+            local DaysSinceGameUpdate = math.floor(math.abs(CurrentTime - os.time()) / 86400)
+            if ThenTime < CurrentTime and DaysSinceScriptUpdate > 1 then
+                ColoredPrint("Days since last script update: " .. DaysSinceScriptUpdate,"info", Color3.fromRGB(236, 48, 120))
+                ColoredPrint("Days since game update: " .. DaysSinceGameUpdate,"info", Color3.fromRGB(236, 48, 120))
+                FeatureLoadout["Outdated"] = {
+                    ["TabAttributes"] = {
+                        ["DisplayTitle"] = '<font color="rgb(255,166,0)">⚠ </font>' .. RichTextGradientColor(" SCRIPT ISN'T TESTED FOR THIS GAME VERSION ",{Color3.fromRGB(255, 166, 0), Color3.fromRGB(243, 227, 0)}) .. '<font color="rgb(243, 227, 0)">⚠ </font>',
+                        ["LayoutOrder"] = -10
+                    }
+                }
+                HandleUIFeatures("Outdated",FeatureLoadout["Outdated"])
+                ColoredPrint(`The game has updated and it has been detected that the script has not been tested/updated for this version.\n{GetValue("DisableAllFeatures") and "All features have been disabled by default to prevent from you possibly getting detected.\n" or ""}Use the features with caution or wait for a update from the script.`, "warning", Color3.fromRGB(255, 166, 0))
+                if GetValue("DisableAllFeatures") then
+                    for i,v in FeatureLoadout do
+                        for i2,v2 in v do
+                            if i2 == "DisableAllFeatures" then continue end
+                            v2["Savable"] = false
+                            if type(v2["DefaultInstanceValue"]) == "boolean" and v2["Instance"] and i ~= "Outdated" and i ~= "EnviromentFunctions" then
+                                v2["DefaultInstanceValue"] = false
+                                v2["Instance"].Value = false
+                            elseif type(v2["DefaultInstanceValue"]) ~= "boolean" and v2["Instance"] and i ~= "Outdated" and i ~= "EnviromentFunctions" then
+                                v2["Instance"].Value = v2["DefaultInstanceValue"]
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end
+
+Initializer.Start()
+
+if SidePlusButton:IsA("Frame") then
+    task.spawn(function()
+        local Menu = MenuData.SidebarMenus[SidePlusButton.Name]
+        if NewUIVersion then
+            for i, v in MainUI:GetChildren() do
+                if v ~= PlusMenu and (v.Name):find("Screen") or v.Name == "Shop" or v.Name == "SwitchServer" then
+                    local ButtonName = v.Name:gsub("Screen", "")
+                    if ButtonName == "Update" then ButtonName = "UpdateLog" end
+                    if ButtonName == "SwitchServer" then ButtonName = "ServerList" end
+                    if MenuData.SidebarMenus[ButtonName] == nil then
+                        local ToggleEvent = Instance.new("BindableEvent")
+                        MenuData.SidebarMenus[ButtonName] = {
+                            ["Menu"] = v,
+                            ["MenuName"] = ButtonName,
+                            ["SidebarButton"] = SideBar:FindFirstChild(ButtonName, true),
+                            ["Button"] = MenuData.SidebarButtons[ButtonName],
+                            ["Toggled"] = ToggleEvent,
+                            ["_sidebar"] = MenuData
+                        }
+                    end
+                end
+            end
+            local CountingMod = false
+            if Menu then
+                SidePlusButton.Button.MouseButton1Click:Connect(function()
+                    MenuData.SidebarMenus["Plus"]["_sidebar"]["MenusHidden"] = false
+                    if not PlusMenu.Visible then
+                        for i,v in MainUI:GetChildren() do
+                            if v ~= PlusMenu and ((v.Name):find("Screen") or v.Name == "Shop" or v.Name == "SwitchServer") then
+                                local ButtonName = v.Name:gsub("Screen","")
+                                if ButtonName == "Update" then ButtonName = "UpdateLog" end
+                                if ButtonName == "SwitchServer" then ButtonName = "ServerList" end
+                                local Button = SideBar:FindFirstChild(ButtonName,true)
+                                if not Button and ButtonName ~= "Mod" then continue end
+                                if (MenuData.SidebarMenus[ButtonName] and not MenuData.SidebarMenus[ButtonName]["Checked"]) or (ButtonName == "Mod" and not CountingMod) then
+                                    if ButtonName == "Mod" then CountingMod = true
+                                    else MenuData.SidebarMenus[ButtonName]["Checked"] = true end
+                                    if Button then
+                                        Button.Button.MouseButton1Click:Connect(function()
+                                            if PlusMenu.Visible and MenuData.TogglingMenus == nil then
+                                                MenuData.TogglingMenus = true
+                                                local PlusEntry = MenuData.SidebarMenus["Plus"]
+                                                if PlusEntry then
+                                                    PlusEntry.Toggled:Fire(false)
+                                                    TweenService:Create(PlusMenu, BaseTweenInfo, {["Size"] = UDim2.new(1, -20, 0, 0)}):Play()
+                                                    task.delay(0.25, function()
+                                                        PlusMenu.Visible = false
+                                                        PlusMenu:SetAttribute("Visible", false)
+                                                    end)
+                                                    if PlusEntry.Button then PlusEntry.Button:SetAppearanceState(false) end
+                                                end
+                                                SetButtonState(false)
+                                                task.delay(0.3, function() MenuData.TogglingMenus = nil end)
+                                            end
+                                        end)
+                                    elseif ButtonName == "Mod" and PlayerGui.TopbarStandard.Holders.Left:FindFirstChild("Widget") then
+                                        local TopMod
+                                        for i,v in PlayerGui.TopbarStandard.Holders.Left:GetChildren() do
+                                            if v:FindFirstChildWhichIsA("TextLabel",true) and v:FindFirstChildWhichIsA("TextLabel",true).Text == "Command Panel" then
+                                                TopMod = v
+                                                break
+                                            end
+                                        end
+                                        if TopMod then
+                                            TopMod.IconButton.Menu.IconSpot.ClickRegion.MouseButton1Click:Connect(function()
+                                                if PlusMenu.Visible and MenuData.TogglingMenus == nil then
+                                                    MenuData.TogglingMenus = true
+                                                    local PlusEntry = MenuData.SidebarMenus["Plus"]
+                                                    if PlusEntry then
+                                                        PlusEntry.Toggled:Fire(false)
+                                                        TweenService:Create(PlusMenu, BaseTweenInfo, {["Size"] = UDim2.new(1, -20, 0, 0)}):Play()
+                                                        task.delay(0.25, function()
+                                                            PlusMenu.Visible = false
+                                                            PlusMenu:SetAttribute("Visible", false)
+                                                        end)
+                                                        if PlusEntry.Button then PlusEntry.Button:SetAppearanceState(false) end
+                                                    end
+                                                    SetButtonState(false)
+                                                    task.delay(0.3, function() MenuData.TogglingMenus = nil end)
+                                                end
+                                            end)
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end)
+            end
+        else
+            if Menu then
+                SidePlusButton.Button.MouseButton1Click:Connect(function()
+                    if not PlusMenu.Visible then
+                        for i,v in MainUI:GetChildren() do
+                            if v ~= PlusMenu and (v.Name):find("Screen") then
+                                local ButtonName = v.Name:gsub("Screen","")
+                                local Button = Buttons:FindFirstChild(ButtonName) or (SideBar:FindFirstChild("Bottombar") and SideBar.Bottombar.Buttons:FindFirstChild(ButtonName)) or nil
+                                if not Button and ButtonName ~= "Mod" then continue end
+                                local Event = v:FindFirstChildOfClass("BindableEvent")
+                                if MenuData.SidebarMenus[ButtonName] == nil then
+                                    if Button then
+                                        Button.Button.MouseButton1Click:Connect(function()
+                                            if PlusMenu.Visible and MenuData.TogglingMenus == nil then Menu:ToggleMenu() end
+                                        end)
+                                    elseif v.Name == "ModScreen" and PlayerGui.TopbarStandard.Holders.Left:FindFirstChild("Widget") then
+                                        PlayerGui.TopbarStandard.Holders.Left.Widget.IconButton.Menu.IconSpot.ClickRegion.MouseButton1Click:Connect(function()
+                                            if PlusMenu.Visible and MenuData.TogglingMenus == nil then Menu:ToggleMenu() end
+                                        end)
+                                    end
+                                    MenuData.SidebarMenus[ButtonName] = {
+                                        ["Toggled"] = Event and Event.Event or nil,
+                                        ["SidebarButton"] = Buttons:FindFirstChild(ButtonName) or nil,
+                                        ["Menu"] = MainUI:FindFirstChild(v.Name),
+                                        ["__toggleEvent"] = Event or nil
+                                    }
+                                end
+                            end
+                        end
+                    end
+                    if MenuData.TogglingMenus == nil then Menu:ToggleMenu() end
+                end)
+            end
+        end
+        if NewUIVersion then
+            local OriginalSize = SidePlusButton.Size
+            SidePlusButton.MouseEnter:Connect(function()
+                TweenService:Create(SidePlusButton, BaseTweenInfo, {Size = UDim2.fromScale(OriginalSize.X.Scale * 1.1, OriginalSize.Y.Scale * 1.13)}):Play()
+                PlaySound("hover")
+            end)
+            SidePlusButton.MouseLeave:Connect(function()
+                TweenService:Create(SidePlusButton, BaseTweenInfo, {Size = OriginalSize}):Play()
+                PlaySound("hoverEnd")
+            end)
+        else
+            local IsBottomBar = SidePlusButton.Parent.Parent.Name == "Bottombar"
+            local PulloutHolder = SidePlusButton.PulloutHolder
+            PulloutHolder.Parent = IsBottomBar and (MenuData.Sidebars.Bottombar.Pullouts or SidePlusButton) or SidePlusButton
+            local PulloutFrame = PulloutHolder.PulloutFrame
+            PulloutFrame.Title.Text = SidePlusButton.Name
+            SidePlusButton.MouseEnter:Connect(function()
+                if SidePlusButton.Button.ImageTransparency <= 0.1 then
+                    TweenService:Create(SidePlusButton, BaseTweenInfo, {Size = UDim2.fromScale(1.05, IsBottomBar and 1.15 or 0.25)}):Play()
+                    if IsBottomBar then
+                        TweenService:Create(PulloutHolder, BaseTweenInfo, {Position = UDim2.fromScale(0.65, 0.85),Size = UDim2.fromScale(0.35, 0.75)}):Play()
+                        TweenService:Create(PulloutFrame.Display, BaseTweenInfo, {ImageTransparency = 0}):Play()
+                        TweenService:Create(PulloutFrame.Title, BaseTweenInfo, {TextTransparency = 0}):Play()
+                    else
+                        TweenService:Create(PulloutFrame, BaseTweenInfo, {Position = UDim2.new(0.225, PulloutFrame.Title.AbsoluteSize.X ^ 1.03, 0.5, 0)}):Play()
+                    end
+                    PlaySound("hover")
+                end
+            end)
+            SidePlusButton.MouseLeave:Connect(function()
+                TweenService:Create(SidePlusButton, BaseTweenInfo, {Size = UDim2.fromScale(1, IsBottomBar and 1 or 0.2)}):Play()
+                if IsBottomBar then
+                    TweenService:Create(PulloutHolder, BaseTweenInfo, {Position = UDim2.fromScale(0.65, 1),Size = UDim2.fromScale(0.15, 0.45)}):Play()
+                    TweenService:Create(PulloutFrame.Display, BaseTweenInfo, {ImageTransparency = 1}):Play()
+                    TweenService:Create(PulloutFrame.Title, BaseTweenInfo, {TextTransparency = 1}):Play()
+                else
+                    TweenService:Create(PulloutFrame, BaseTweenInfo, {Position = UDim2.fromScale(0, 0.5)}):Play()
+                end
+                if SidePlusButton.Button.ImageTransparency <= 0.1 then PlaySound("hoverEnd") end
+            end)
+        end
+    end)
+end
+
+local function UICheck()
+    local Status = SideBar:GetAttribute("WasVisible")
+    SetButtonState(false)
+    local LayoutInstance = Buttons and Buttons:FindFirstChildOfClass("UIListLayout") or Buttons and Buttons:FindFirstChildOfClass("UIGridLayout")
+    if not LayoutInstance:GetAttribute("VerticalAlignment") then
+        LayoutInstance:SetAttribute("VerticalAlignment", LayoutInstance.VerticalAlignment)
+    end
+    if Status then
+        if not NewUIVersion then
+            if LayoutInstance then
+                LayoutInstance.VerticalAlignment = LayoutInstance:GetAttribute("VerticalAlignment")
+            end
+        else
+            SideBar:FindFirstChildOfClass("UIPadding").PaddingRight = UDim.new(0.2,0)
+            SideBar:FindFirstChildOfClass("UIPadding").PaddingLeft = UDim.new(0,0)
+            UIScale.Scale = 1
+        end
+        PlusMenu.SettingsContainer.ImageTransparency = 0
+        PlusMenu.SettingsContainer.Contents.ScrollBarImageTransparency = 0
+        if SideBar:IsA("ImageLabel") then SideBar.ImageTransparency = 0 end
+        for i,v in PlusMenu.SettingsContainer.Contents:GetChildren() do
+            if v:IsA("ImageLabel") then v.ImageTransparency = 0
+            elseif v:IsA("Frame") then
+                for i,v in v:GetChildren() do
+                    if v:IsA("ImageLabel") or v:IsA("ImageButton") then v.ImageTransparency = 0 end
+                end
+            end
+        end
+    else
+        if NewUIVersion then
+            MenuData.SidebarMenus["Plus"]["_sidebar"]["MenusHidden"] = false
+            task.delay(0.5,function()
+                MenuData.SidebarMenus["Plus"]["_sidebar"]["MenusHidden"] = false
+            end)
+            SideBar:FindFirstChildOfClass("UIPadding").PaddingRight = UDim.new(0,0)
+            SideBar:FindFirstChildOfClass("UIPadding").PaddingLeft = UDim.new(0.2,0)
+            UIScale.Scale = 1.3
+        end
+        if LayoutInstance then LayoutInstance.VerticalAlignment = Enum.VerticalAlignment.Center end
+        PlusMenu.SettingsContainer.ImageTransparency = 0.3
+        PlusMenu.SettingsContainer.Contents.ScrollBarImageTransparency = 0.45
+        if SideBar:IsA("ImageLabel") then SideBar.ImageTransparency = 1 end
+        for i,v in PlusMenu.SettingsContainer.Contents:GetChildren() do
+            if v:IsA("ImageLabel") then v.ImageTransparency = 0.4
+            elseif v:IsA("Frame") then
+                for i,v in v:GetChildren() do
+                    if v:IsA("ImageLabel") or v:IsA("ImageButton") then v.ImageTransparency = 0.3 end
+                end
+            end
+        end
+    end
+    for i,v in SideBar:QueryDescendants(`#Bottom > Frame, > ImageLabel , #Bottombar , #{Buttons.Name} > Frame {((not NewUIVersion) and false and ":not(#Credits)" or "")} :not(#TesterUi)`) do
+        if not v:GetAttribute("Visibility") and (not v.Name:lower():find("credit") or v.Parent ~= SidePlusButton.Parent) then
+            v:SetAttribute("Visibility",v.Visible)
+        end
+        v.Visible = Status and v:GetAttribute("Visibility") or false
+    end
+    SidePlusButton.Visible = true
+    if NewUIVersion then
+        local PlusEntry = MenuData.SidebarMenus["Plus"]
+        if PlusEntry and PlusMenu.Visible then
+            PlusEntry.Toggled:Fire(false)
+            TweenService:Create(PlusMenu, BaseTweenInfo, {["Size"] = UDim2.new(1, -20, 0, 0)}):Play()
+            task.delay(0.25, function()
+                PlusMenu.Visible = false
+                PlusMenu:SetAttribute("Visible", false)
+            end)
+        end
+    end
+    if not Status then RoundEvent:Fire("Start") else RoundEvent:Fire("End") end
+end
+
+MainUI.ChildAdded:Connect(function(Child)
+    if Child.Name == "AbilityContainer" then
+        SideBar:SetAttribute("WasVisible", false)
+        UICheck()
+    end
+end)
+MainUI.ChildRemoved:Connect(function(Child)
+    if Child.Name == "AbilityContainer" then
+        SideBar:SetAttribute("WasVisible", true)
+        UICheck()
+    end
+end)
+SideBar:GetPropertyChangedSignal("Visible"):Connect(function() SideBar.Visible = true end)
+SideBar:SetAttribute("WasVisible",(MainUI:FindFirstChild("AbilityContainer") == nil))
+UICheck()
+SideBar.Visible = true
+task.spawn(ActionOnCharacter,LocalCharacter or LocalPlayer.Character)
+
+ColoredPrint("Forsaken plus has loaded successfully","success",Color3.fromRGB(0, 200, 125))
+
+-- =====================================================================
+-- hzayday Forshaken — Rayfield companion UI
+-- =====================================================================
+do
+    local ok, err = pcall(function()
+        local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+        local Window = Rayfield:CreateWindow({
+            Name = "hzayday Forshaken",
+            LoadingTitle = "hzayday Forshaken",
+            LoadingSubtitle = "Advanced Generator Automation",
+            ConfigurationSaving = {
+                Enabled = true,
+                FolderName = "hzaydayForshaken",
+                FileName = "Config",
+            },
+            KeySystem = false,
+        })
+
+        local GenTab      = Window:CreateTab("Generator", 4483362458)
+        local SettingsTab = Window:CreateTab("Settings",  4483362458)
+        local InfoTab     = Window:CreateTab("Info",      4483362458)
+
+        local function GetFeature(name)
+            return FeatureLoadout and FeatureLoadout["Automation"] and FeatureLoadout["Automation"][name]
+        end
+        local function GetInstance(name)
+            local F = GetFeature(name)
+            return F and F.Instance
+        end
+
+        GenTab:CreateSection("Smart Automation")
+
+        GenTab:CreateToggle({
+            Name         = "Advanced Auto Repair (Smart Switcher)",
+            CurrentValue = (function()
+                local I = GetInstance("AdvancedAutoRepair")
+                return I and I.Value or false
+            end)(),
+            Flag         = "AdvAutoRepair",
+            Callback     = function(Value)
+                local I = GetInstance("AdvancedAutoRepair")
+                if I then I.Value = Value end
+            end,
+        })
+
+        GenTab:CreateSlider({
+            Name = "Killer Detection Radius",
+            Range = { 15, 100 }, Increment = 5, Suffix = " studs",
+            CurrentValue = (function()
+                local I = GetInstance("AdvancedAutoRepairKillerRadius")
+                return I and I.Value or 40
+            end)(),
+            Flag = "AdvKillerRadius",
+            Callback = function(Value)
+                local I = GetInstance("AdvancedAutoRepairKillerRadius")
+                if I then I.Value = Value end
+            end,
+        })
+
+        GenTab:CreateSlider({
+            Name = "Health Threshold (%)",
+            Range = { 10, 100 }, Increment = 5, Suffix = " %",
+            CurrentValue = (function()
+                local I = GetInstance("AdvancedAutoRepairHealth")
+                return I and I.Value or 90
+            end)(),
+            Flag = "AdvHealthThreshold",
+            Callback = function(Value)
+                local I = GetInstance("AdvancedAutoRepairHealth")
+                if I then I.Value = Value end
+            end,
+        })
+
+        GenTab:CreateSlider({
+            Name = "Max Search Radius",
+            Range = { 50, 1000 }, Increment = 25, Suffix = " studs",
+            CurrentValue = (function()
+                local I = GetInstance("AdvancedAutoRepairRange")
+                return I and I.Value or 300
+            end)(),
+            Flag = "AdvRange",
+            Callback = function(Value)
+                local I = GetInstance("AdvancedAutoRepairRange")
+                if I then I.Value = Value end
+            end,
+        })
+
+        GenTab:CreateSection("Complementary Modules")
+
+        GenTab:CreateToggle({
+            Name = "Auto Generator Puzzle Solver",
+            CurrentValue = (function()
+                local I = GetInstance("AutoGeneratorPuzzle")
+                return I and I.Value or false
+            end)(),
+            Flag = "AutoGenPuzzle",
+            Callback = function(Value)
+                local I = GetInstance("AutoGeneratorPuzzle")
+                if I then I.Value = Value end
+            end,
+        })
+
+        SettingsTab:CreateSection("Teleport")
+
+        SettingsTab:CreateSlider({
+            Name = "Teleport Step Delay",
+            Range = { 0.01, 0.2 }, Increment = 0.01, Suffix = " s",
+            CurrentValue = (function()
+                local I = GetInstance("AdvancedAutoRepairTeleportSpeed")
+                return I and I.Value or 0.05
+            end)(),
+            Flag = "AdvTeleSpeed",
+            Callback = function(Value)
+                local I = GetInstance("AdvancedAutoRepairTeleportSpeed")
+                if I then I.Value = Value end
+            end,
+        })
+
+        SettingsTab:CreateSection("Diagnostics")
+
+        local statusLabel = SettingsTab:CreateLabel("Status: Initialising…")
+        task.spawn(function()
+            while task.wait(1) do
+                local F = GetFeature("AdvancedAutoRepair")
+                if F and F.State then
+                    local S = F.State
+                    local tgt = S.CurrentTarget and S.CurrentTarget.Name or "None"
+                    local bl = 0
+                    for _ in pairs(S.Blacklisted or {}) do bl += 1 end
+                    statusLabel:Set(`Current Target: <font color="#00ffcc">{tgt}</font> | Blacklisted: {bl} | Enabled: {tostring(S.Enabled)}`)
+                end
+            end
+        end)
+
+        InfoTab:CreateParagraph({
+            Title = "hzayday Forshaken",
+            Content = "Advanced Generator Automation for Forsaken Plus.\n\n" ..
+                      "• Auto-teleports & interacts with real generators\n" ..
+                      "• Real-time damage / killer proximity abort\n" ..
+                      "• Automatic fake-generator blacklisting\n" ..
+                      "• Cleanly disengages AutoGeneratorPuzzle on abort",
+        })
+    end)
+    if not ok then
+        warn("[hzayday Forshaken] Rayfield UI failed to load: " .. tostring(err))
+    end
+end
