@@ -11,7 +11,6 @@ do
 	end
 
 	local str = "hduSjOT3xk44"
-
 	local tbl = {}
 
 	tbl[#tbl + 1] = function()
@@ -354,21 +353,6 @@ tbl = {
 	"Japan",
 }
 
-local tbl2 = {
-	Background = Color3.fromRGB(17, 18, 23),
-	Panel = Color3.fromRGB(26, 27, 34),
-	PanelAlt = Color3.fromRGB(33, 34, 43),
-	Stroke = Color3.fromRGB(50, 51, 63),
-	TextPrimary = Color3.fromRGB(240, 240, 245),
-	TextDim = Color3.fromRGB(145, 146, 158),
-	Amber = Color3.fromRGB(240, 170, 60),
-	Teal = Color3.fromRGB(70, 200, 190),
-	Rose = Color3.fromRGB(225, 95, 110),
-	Lavender = Color3.fromRGB(150, 130, 235),
-	FarmOn = Color3.fromRGB(70, 200, 130),
-	FarmOff = Color3.fromRGB(200, 70, 80),
-}
-
 local flag3
 flag3 = true
 local HttpService
@@ -439,7 +423,6 @@ fn2 = function(arg, arg2, arg3, arg4, arg5)
 end
 
 local createUIGradient
-
 createUIGradient = function(parent, arg, arg2, rotation)
 	local uiGradient = Instance.new("UIGradient")
 	uiGradient.Color = ColorSequence.new(arg, arg2)
@@ -449,13 +432,11 @@ createUIGradient = function(parent, arg, arg2, rotation)
 end
 
 local fn3
-
 fn3 = function(arg, arg2)
 	Instance.new("UICorner", arg).CornerRadius = UDim.new(0, arg2 or 8)
 end
 
 local createUIStroke
-
 createUIStroke = function(parent, color, thickness, transparency)
 	local uiStroke = Instance.new("UIStroke")
 	uiStroke.Color = color or Color3.fromRGB(255, 255, 255)
@@ -465,975 +446,266 @@ createUIStroke = function(parent, color, thickness, transparency)
 	return uiStroke
 end
 
--- ========================================================
--- [hzayday vip] - 3D GUI ENHANCEMENT BY ARUARU
--- ========================================================
-local frame, imageLabel, textLabel, n, n2, frame2
+-- =========================================================================
+-- HZAYDAY VIP - 3D PARALLAX GLASSMORPHISM UI INJECTION
+-- =========================================================================
+local n = 720
+local n2 = 420
+local tbl3, textButton, textButton2, doServerHop
+
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "hzayday_vip_3D_UI"
+screenGui.Name = "hzayday_VIP_3D"
 screenGui.ResetOnSpawn = false
 screenGui.DisplayOrder = 999
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 screenGui.IgnoreGuiInset = true
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 screenGui.Parent = game.CoreGui
 
-frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 300)
-frame.Position = UDim2.new(0.5, -150, 0.5, -150)
-frame.BackgroundColor3 = Color3.fromRGB(8, 8, 10)
-frame.BackgroundTransparency = 1
-frame.BorderSizePixel = 0
-frame.ZIndex = 100
-frame.Parent = screenGui
-fn3(frame, 20)
-
-imageLabel = Instance.new("ImageLabel")
-imageLabel.Size = UDim2.new(0, 150, 0, 150)
-imageLabel.Position = UDim2.new(0.5, -75, 0.5, -100)
-imageLabel.BackgroundTransparency = 1
-imageLabel.Image = "rbxassetid://138691340576184"
-imageLabel.ImageTransparency = 1
-imageLabel.ZIndex = 101
-imageLabel.Parent = frame
-fn3(imageLabel, 20)
-
-textLabel = Instance.new("TextLabel")
-textLabel.Size = UDim2.new(0, 300, 0, 50)
-textLabel.Position = UDim2.new(0.5, -150, 0.5, 70)
-textLabel.BackgroundTransparency = 1
-textLabel.Text = "hzayday vip"
-textLabel.Font = Enum.Font.GothamBold
-textLabel.TextSize = 28
-textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-textLabel.TextTransparency = 1
-textLabel.ZIndex = 101
-textLabel.Parent = frame
-createUIGradient(textLabel, Color3.fromRGB(255, 150, 200), Color3.fromRGB(255, 255, 255), 0)
-
-n = 700
-n2 = 394
-
--- 3D LAYERS
-local shadowFrame = Instance.new("Frame")
-shadowFrame.Name = "ShadowLayer"
-shadowFrame.Size = UDim2.new(0, 720, 0, 414)
-shadowFrame.Position = UDim2.new(0.5, 0, 0.5, 10)
-shadowFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-shadowFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-shadowFrame.BackgroundTransparency = 0.5
-shadowFrame.BorderSizePixel = 0
-shadowFrame.ZIndex = 40
-shadowFrame.Visible = false
-shadowFrame.Parent = screenGui
-fn3(shadowFrame, 20)
-
-local dropShadow = Instance.new("ImageLabel")
-dropShadow.Name = "DropShadow"
-dropShadow.Size = UDim2.new(1, 40, 1, 40)
-dropShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
-dropShadow.AnchorPoint = Vector2.new(0.5, 0.5)
-dropShadow.BackgroundTransparency = 1
-dropShadow.Image = "rbxassetid://1316045217"
-dropShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-dropShadow.ImageTransparency = 0.4
-dropShadow.ZIndex = 39
-dropShadow.Parent = shadowFrame
-
-local bottom3D = Instance.new("Frame")
-bottom3D.Name = "Bottom3DLayer"
-bottom3D.Size = UDim2.new(0, 700, 0, 394)
-bottom3D.Position = UDim2.new(0.5, 0, 0.5, 6)
-bottom3D.AnchorPoint = Vector2.new(0.5, 0.5)
-bottom3D.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
-bottom3D.BorderSizePixel = 0
-bottom3D.ZIndex = 45
-bottom3D.Visible = false
-bottom3D.Parent = screenGui
-fn3(bottom3D, 18)
-createUIStroke(bottom3D, Color3.fromRGB(40, 40, 50), 2, 0)
-
-frame2 = Instance.new("Frame")
-frame2.Name = "Sigma"
-frame2.Size = UDim2.new(0, 700, 0, 394)
+local frame2 = Instance.new("Frame")
+frame2.Name = "MainFrame"
+frame2.Size = UDim2.new(0, n, 0, n2)
 frame2.Position = UDim2.new(0.5, 0, 0.5, 0)
 frame2.AnchorPoint = Vector2.new(0.5, 0.5)
-frame2.BackgroundColor3 = Color3.fromRGB(26, 27, 34)
-frame2.BackgroundTransparency = 0
-frame2.BorderSizePixel = 0
+frame2.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+frame2.BackgroundTransparency = 0.15
 frame2.Active = true
 frame2.Draggable = true
-frame2.ZIndex = 50
-frame2.ClipsDescendants = true
-frame2.Visible = false
 frame2.Parent = screenGui
-fn3(frame2, 18)
+fn3(frame2, 15)
 
-local highlightStroke = createUIStroke(frame2, Color3.fromRGB(255, 255, 255), 1, 0)
-local highlightGradient = createUIGradient(highlightStroke, Color3.fromRGB(80, 180, 255), Color3.fromRGB(255, 100, 200), 45)
+local uiStroke = createUIStroke(frame2, Color3.fromRGB(255, 150, 200), 2, 0.2)
+local uiGradient = createUIGradient(uiStroke, Color3.fromRGB(80, 180, 255), Color3.fromRGB(255, 150, 200), 45)
 
-local UserInputService = game:GetService("UserInputService")
+task.spawn(function()
+    local tweenInfo = TweenInfo.new(3, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1)
+    while true do
+        local t = TweenService:Create(uiGradient, tweenInfo, {Rotation = 405})
+        t:Play()
+        t.Completed:Wait()
+        uiGradient.Rotation = 45
+    end
+end)
+
+local title = Instance.new("TextLabel", frame2)
+title.Size = UDim2.new(1, -40, 0, 40)
+title.Position = UDim2.new(0, 20, 0, 10)
+title.BackgroundTransparency = 1
+title.Text = "hzayday VIP - 3D Parallax"
+title.Font = Enum.Font.GothamBlack
+title.TextSize = 24
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextXAlignment = Enum.TextXAlignment.Left
+createUIGradient(title, Color3.fromRGB(255, 220, 100), Color3.fromRGB(255, 160, 40), 0)
+
+local localPlayer = game:GetService("Players").LocalPlayer
+local mouse = localPlayer:GetMouse()
 local maxTilt = 5
-
 RunService.RenderStepped:Connect(function()
-	if not frame2.Parent or not frame2.Visible then return end
-	
-	shadowFrame.Visible = true
-	bottom3D.Visible = true
-
-	-- Sync position to frame2 (so dragging works flawlessly)
-	local posX = frame2.Position.X
-	local posY = frame2.Position.Y
-	
-	shadowFrame.Position = UDim2.new(posX.Scale, posX.Offset, posY.Scale, posY.Offset + 10)
-	bottom3D.Position = UDim2.new(posX.Scale, posX.Offset, posY.Scale, posY.Offset + 6)
-
-	if frame2.Size.X.Offset < 700 then
-		shadowFrame.Size = UDim2.new(0, frame2.Size.X.Offset + 20, 0, frame2.Size.Y.Offset + 20)
-		bottom3D.Size = frame2.Size
-	else
-		shadowFrame.Size = UDim2.new(0, 720, 0, 414)
-		bottom3D.Size = UDim2.new(0, 700, 0, 394)
-	end
-
-	local currentCamera = workspace.CurrentCamera
-	if not currentCamera then return end
-	local mousePos = UserInputService:GetMouseLocation()
-	local viewport = currentCamera.ViewportSize
-	local center = viewport / 2
-	
-	local offset = Vector2.new(
-		math.clamp((mousePos.X - center.X) / center.X, -1, 1),
-		math.clamp((mousePos.Y - center.Y) / center.Y, -1, 1)
-	)
-	
-	local tiltInfo = TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
-	
-	-- Rotate elements based on mouse position to create 3D tilt
-	TweenService:Create(frame2, tiltInfo, { Rotation = offset.X * maxTilt }):Play()
-	TweenService:Create(bottom3D, tiltInfo, { Rotation = offset.X * maxTilt }):Play()
-	TweenService:Create(shadowFrame, tiltInfo, { Rotation = offset.X * maxTilt * 0.5 }):Play()
+    if frame2.Visible then
+        local center = Vector2.new(frame2.AbsolutePosition.X + frame2.AbsoluteSize.X/2, frame2.AbsolutePosition.Y + frame2.AbsoluteSize.Y/2)
+        local mousePos = Vector2.new(mouse.X, mouse.Y)
+        local offset = (mousePos - center)
+        local rotX = math.clamp(offset.Y / frame2.AbsoluteSize.Y * maxTilt, -maxTilt, maxTilt)
+        local rotY = math.clamp(-offset.X / frame2.AbsoluteSize.X * maxTilt, -maxTilt, maxTilt)
+        TweenService:Create(frame2, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+            Rotation = rotY / 2
+        }):Play()
+    end
 end)
 
--- Hiệu ứng Hạt bụi lấp lánh (Particles)
-task.spawn(function()
-	while frame2.Parent do
-		if frame2.Visible then
-			local particle = Instance.new("Frame")
-			particle.Size = UDim2.new(0, math.random(2, 6), 0, math.random(2, 6))
-			particle.Position = UDim2.new(math.random(), 0, 1.2, 0)
-			particle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-			particle.BackgroundTransparency = math.random(4, 8) / 10
-			particle.ZIndex = 51
-			fn3(particle, 10)
-			particle.Parent = frame2
+tbl3 = {}
+local statsContainer = Instance.new("Frame", frame2)
+statsContainer.Size = UDim2.new(1, -40, 0, 70)
+statsContainer.Position = UDim2.new(0, 20, 0, 60)
+statsContainer.BackgroundTransparency = 1
+local uiList = Instance.new("UIListLayout", statsContainer)
+uiList.FillDirection = Enum.FillDirection.Horizontal
+uiList.Padding = UDim.new(0, 10)
 
-			local speed = math.random(3, 7)
-			local tween = TweenService:Create(particle, TweenInfo.new(speed, Enum.EasingStyle.Linear), {
-				Position = UDim2.new(math.random(), 0, -0.2, 0),
-				BackgroundTransparency = 1,
-				Rotation = math.random(-180, 180)
-			})
-			tween:Play()
-			
-			tween.Completed:Connect(function()
-				particle:Destroy()
-			end)
-		end
-		task.wait(math.random(1, 4) / 10)
-	end
+local function createStatBox(id, labelText, accentColor)
+    local box = Instance.new("Frame", statsContainer)
+    box.Size = UDim2.new(0, 128, 1, 0)
+    box.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    box.BackgroundTransparency = 0.5
+    fn3(box, 8)
+    createUIStroke(box, accentColor, 1, 0.5)
+    local lbl = Instance.new("TextLabel", box)
+    lbl.Size = UDim2.new(1, -10, 0, 20)
+    lbl.Position = UDim2.new(0, 5, 0, 5)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = labelText
+    lbl.TextColor3 = Color3.fromRGB(150, 150, 150)
+    lbl.Font = Enum.Font.GothamBold
+    lbl.TextSize = 11
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    local val = Instance.new("TextLabel", box)
+    val.Size = UDim2.new(1, -10, 0, 35)
+    val.Position = UDim2.new(0, 5, 0, 25)
+    val.BackgroundTransparency = 1
+    val.Text = id == "timer" and "00:00:00" or "0"
+    val.TextColor3 = Color3.fromRGB(255, 255, 255)
+    val.Font = Enum.Font.GothamBlack
+    val.TextSize = 18
+    val.TextXAlignment = Enum.TextXAlignment.Left
+    tbl3[id] = val
+end
+
+createStatBox("timer", "SESSION", Color3.fromRGB(255, 200, 60))
+createStatBox("kills", "KILLS", Color3.fromRGB(226, 100, 100))
+createStatBox("kph", "KILLS/HR", Color3.fromRGB(120, 220, 140))
+createStatBox("emotes", "EMOTES", Color3.fromRGB(220, 160, 60))
+createStatBox("total", "TOTAL", Color3.fromRGB(180, 120, 255))
+
+local webhookBox = Instance.new("TextBox", frame2)
+webhookBox.Size = UDim2.new(0, 550, 0, 35)
+webhookBox.Position = UDim2.new(0, 20, 0, 150)
+webhookBox.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
+webhookBox.PlaceholderText = "Webhook URL..."
+webhookBox.Text = v.webhookUrl or ""
+webhookBox.TextColor3 = Color3.fromRGB(255,255,255)
+webhookBox.Font = Enum.Font.Gotham
+webhookBox.TextSize = 12
+webhookBox.TextXAlignment = Enum.TextXAlignment.Left
+fn3(webhookBox, 8)
+createUIStroke(webhookBox, Color3.fromRGB(80, 80, 90), 1, 0.5)
+webhookBox:GetPropertyChangedSignal("Text"):Connect(function()
+    v.webhookUrl = webhookBox.Text
+    fn() 
 end)
 
-do
-	local uiGradient = Instance.new("UIGradient")
-	local colorSequence = ColorSequence.new
-	local tbl3 = {}
-	local v2 = ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0))
-	local v3 = ColorSequenceKeypoint.new(0.35, Color3.fromRGB(10, 10, 15))
-	local v4 = ColorSequenceKeypoint.new(0.5, Color3.fromRGB(38, 38, 48))
-	local v5 = ColorSequenceKeypoint.new(0.65, Color3.fromRGB(10, 10, 15))
-	local new = ColorSequenceKeypoint.new
-	local color = Color3.fromRGB
-	tbl3[1] = v2
-	tbl3[2] = v3
-	tbl3[3] = v4
-	tbl3[4] = v5
-
-	do
-		local values = table.pack(new(1, color(0, 0, 0)))
-		table.move(values, 1, values.n, 5, tbl3)
-	end
-
-	uiGradient.Color = colorSequence(tbl3)
-	uiGradient.Rotation = 45
-	uiGradient.Offset = Vector2.new(-1, 0)
-	uiGradient.Parent = frame2
-
-	task.spawn(function()
-		local tweenInfo = TweenInfo.new(4, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
-
-		while true do
-			local tween = TweenService:Create(uiGradient, tweenInfo, { Offset = Vector2.new(1, 0) })
-			tween:Play()
-			tween.Completed:Wait()
-			uiGradient.Offset = Vector2.new(-1, 0)
-		end
-	end)
-end
-
-do
-	local frame3 = Instance.new("Frame")
-	frame3.Size = UDim2.new(0, 180, 0, 32)
-	frame3.Position = UDim2.new(0, 14, 0, 12)
-	frame3.BackgroundTransparency = 1
-	frame3.ZIndex = 51
-	frame3.Parent = frame2
-	local imageLabel2 = Instance.new("ImageLabel")
-	imageLabel2.Size = UDim2.new(0, 28, 0, 28)
-	imageLabel2.BackgroundTransparency = 1
-	imageLabel2.Image = "rbxassetid://138691340576184"
-	imageLabel2.ZIndex = 52
-	imageLabel2.Parent = frame3
-	fn3(imageLabel2, 8)
-	local textLabel2 = Instance.new("TextLabel")
-	textLabel2.Size = UDim2.new(0, 140, 0, 16)
-	textLabel2.Position = UDim2.new(0, 36, 0, 6)
-	textLabel2.BackgroundTransparency = 1
-	textLabel2.Text = "hzayday vip [3D]"
-	textLabel2.Font = Enum.Font.GothamBold
-	textLabel2.TextSize = 12
-	textLabel2.TextColor3 = Color3.fromRGB(255, 255, 255)
-	textLabel2.TextXAlignment = Enum.TextXAlignment.Left
-	textLabel2.ZIndex = 52
-	textLabel2.Parent = frame3
-	createUIGradient(textLabel2, Color3.fromRGB(255, 140, 200), Color3.fromRGB(140, 220, 255), 0)
-	
-	-- Drop shadow cho Title 3D
-	local titleShadow = textLabel2:Clone()
-	titleShadow.TextColor3 = Color3.fromRGB(0, 0, 0)
-	titleShadow.Position = UDim2.new(0, 2, 0, 8)
-	titleShadow.ZIndex = 51
-	titleShadow.Parent = frame3
-	titleShadow:ClearAllChildren()
-end
-
-local frame3
-frame3 = Instance.new("Frame")
-frame3.Size = UDim2.new(1, -32, 1, -62)
-frame3.Position = UDim2.new(0, 16, 0, 50)
-frame3.BackgroundTransparency = 1
-frame3.ZIndex = 51
-frame3.Parent = frame2
-local textLabel2 = Instance.new("TextLabel")
-textLabel2.Size = UDim2.new(1, 0, 0, 30)
-textLabel2.Position = UDim2.new(0, 0, 0, 0)
-textLabel2.BackgroundTransparency = 1
-textLabel2.Text = "VIP panel"
-textLabel2.Font = Enum.Font.GothamBold
-textLabel2.TextSize = 24
-textLabel2.TextColor3 = Color3.fromRGB(255, 200, 60)
-textLabel2.TextXAlignment = Enum.TextXAlignment.Left
-textLabel2.ZIndex = 52
-textLabel2.Parent = frame3
-createUIGradient(textLabel2, Color3.fromRGB(255, 220, 100), Color3.fromRGB(255, 160, 40), 0)
-
-do
-	local frame4 = Instance.new("Frame")
-	frame4.Size = UDim2.new(1, 0, 0, 18)
-	frame4.Position = UDim2.new(0, 0, 0, 30)
-	frame4.BackgroundTransparency = 1
-	frame4.ZIndex = 51
-	frame4.Parent = frame3
-	local textLabel3 = Instance.new("TextLabel")
-	textLabel3.Size = UDim2.new(0, 110, 1, 0)
-	textLabel3.BackgroundTransparency = 1
-	textLabel3.Text = "Your current plan:"
-	textLabel3.Font = Enum.Font.Gotham
-	textLabel3.TextSize = 12
-	textLabel3.TextColor3 = Color3.fromRGB(180, 180, 190)
-	textLabel3.TextXAlignment = Enum.TextXAlignment.Left
-	textLabel3.ZIndex = 52
-	textLabel3.Parent = frame4
-	local textLabel4 = Instance.new("TextLabel")
-	textLabel4.Size = UDim2.new(0, 100, 1, 0)
-	textLabel4.Position = UDim2.new(0, 108, 0, 0)
-	textLabel4.BackgroundTransparency = 1
-	textLabel4.Text = flag2 and "[Premium]" or "[Freemium]"
-	textLabel4.Font = Enum.Font.GothamBold
-	textLabel4.TextSize = 20
-	textLabel4.TextColor3 = Color3.fromRGB(255, 255, 255)
-	textLabel4.TextXAlignment = Enum.TextXAlignment.Left
-	textLabel4.ZIndex = 52
-	textLabel4.Parent = frame4
-	local imageLabel2 = Instance.new("ImageLabel")
-	imageLabel2.BackgroundTransparency = 1
-	imageLabel2.Size = UDim2.new(0, 25, 0, 25)
-
-	if flag2 then
-		imageLabel2.Position = UDim2.new(0, 210, 0.5, -10)
-		imageLabel2.Image = "rbxassetid://78108949720918"
-	else
-		imageLabel2.Position = UDim2.new(0, 215, 0.5, -10)
-		imageLabel2.Image = "rbxassetid://137799393139541"
-	end
-
-	imageLabel2.ScaleType = Enum.ScaleType.Fit
-	imageLabel2.ZIndex = 53
-	imageLabel2.Parent = frame4
-	local uiGradient = Instance.new("UIGradient")
-
-	if flag2 then
-		local colorSequence = ColorSequence.new
-		local tbl3 = {}
-		local v2 = ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 180, 255))
-		local v3 = ColorSequenceKeypoint.new(0.35, Color3.fromRGB(140, 220, 255))
-		local v4 = ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255))
-		local v5 = ColorSequenceKeypoint.new(0.65, Color3.fromRGB(140, 220, 255))
-		local new = ColorSequenceKeypoint.new
-		local color = Color3.fromRGB
-		tbl3[1] = v2
-		tbl3[2] = v3
-		tbl3[3] = v4
-		tbl3[4] = v5
-
-		do
-			local values = table.pack(new(1, color(80, 180, 255)))
-			table.move(values, 1, values.n, 5, tbl3)
-		end
-
-		uiGradient.Color = colorSequence(tbl3)
-	else
-		local colorSequence = ColorSequence.new
-		local tbl3 = {}
-		local v2 = ColorSequenceKeypoint.new(0, Color3.fromRGB(60, 200, 100))
-		local v3 = ColorSequenceKeypoint.new(0.35, Color3.fromRGB(100, 240, 140))
-		local v4 = ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220, 255, 225))
-		local v5 = ColorSequenceKeypoint.new(0.65, Color3.fromRGB(100, 240, 140))
-		local new = ColorSequenceKeypoint.new
-		local color = Color3.fromRGB
-		tbl3[1] = v2
-		tbl3[2] = v3
-		tbl3[3] = v4
-		tbl3[4] = v5
-
-		do
-			local values = table.pack(new(1, color(60, 200, 100)))
-			table.move(values, 1, values.n, 5, tbl3)
-		end
-
-		uiGradient.Color = colorSequence(tbl3)
-	end
-
-	uiGradient.Rotation = 0
-	uiGradient.Offset = Vector2.new(-1, 0)
-	uiGradient.Parent = textLabel4
-	createUIStroke(textLabel4, flag2 and Color3.fromRGB(120, 220, 255) or Color3.fromRGB(100, 240, 140), 1, 0.5)
-
-	task.spawn(function()
-		local tweenInfo = TweenInfo.new(2.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut)
-
-		while textLabel4.Parent do
-			local tween = TweenService:Create(uiGradient, tweenInfo, { Offset = Vector2.new(1, 0) })
-			tween:Play()
-			tween.Completed:Wait()
-			uiGradient.Offset = Vector2.new(-1, 0)
-			RunService.RenderStepped:Wait()
-		end
-	end)
-end
-
-local tbl3
-
-do
-	local frame4 = Instance.new("Frame")
-	frame4.Size = UDim2.new(1, 0, 0, 68)
-	frame4.Position = UDim2.new(0, 0, 0, 56)
-	frame4.BackgroundTransparency = 1
-	frame4.ZIndex = 51
-	frame4.Parent = frame3
-	local uiGridLayout = Instance.new("UIGridLayout")
-	uiGridLayout.CellSize = UDim2.new(0.19, 0, 1, 0)
-	uiGridLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-	uiGridLayout.VerticalAlignment = Enum.VerticalAlignment.Top
-	uiGridLayout.StartCorner = Enum.StartCorner.TopLeft
-	uiGridLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	uiGridLayout.Parent = frame4
-	local tbl4 = {}
-
-	local tbl5 = {
-		id = "timer",
-		label = "SESSION",
-		value = "00:00:00",
-		accent = Color3.fromRGB(255, 200, 60),
-		short = false,
-	}
-
-	local tbl6 = {
-		id = "kills",
-		label = "KILLS",
-		value = "0",
-		accent = Color3.fromRGB(226, 100, 100),
-		short = true,
-	}
-
-	local tbl7 = {
-		id = "kph",
-		label = "KILLS/HR",
-		value = "0",
-		accent = Color3.fromRGB(120, 220, 140),
-		short = true,
-	}
-
-	local tbl8 = {
-		id = "emotes",
-		label = "EMOTES",
-		value = "0",
-		accent = Color3.fromRGB(220, 160, 60),
-		short = true,
-	}
-
-	local tbl9 = {
-		id = "total",
-		label = "TOTAL KILLS",
-		value = "0",
-		accent = Color3.fromRGB(180, 120, 255),
-		short = true,
-	}
-
-	tbl4[1] = tbl5
-	tbl4[2] = tbl6
-	tbl4[3] = tbl7
-	tbl4[4] = tbl8
-	tbl4[5] = tbl9
-	tbl3 = {}
-
-	for i, v2 in ipairs(tbl4) do
-		local frame5 = Instance.new("Frame")
-		frame5.Size = UDim2.new(1, 0, 1, 0)
-		frame5.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
-		frame5.BorderSizePixel = 0
-		frame5.LayoutOrder = i
-		frame5.ZIndex = 52
-		frame5.Parent = frame4
-		fn3(frame5, 12)
-		createUIStroke(frame5, Color3.fromRGB(80, 80, 90), 1, 0.8)
-		local frame6 = Instance.new("Frame")
-		frame6.Size = UDim2.new(1, 0, 0, 2)
-		frame6.BackgroundColor3 = v2.accent
-		frame6.BorderSizePixel = 0
-		frame6.ZIndex = 53
-		frame6.Parent = frame5
-		fn3(frame6, 2)
-		local textLabel3 = Instance.new("TextLabel")
-		textLabel3.Size = UDim2.new(1, -10, 0, 10)
-		textLabel3.Position = UDim2.new(0, 6, 0, 6)
-		textLabel3.BackgroundTransparency = 1
-		textLabel3.Text = v2.label
-		textLabel3.Font = Enum.Font.Gotham
-		textLabel3.TextSize = 7
-		textLabel3.TextColor3 = Color3.fromRGB(120, 120, 130)
-		textLabel3.TextXAlignment = Enum.TextXAlignment.Left
-		textLabel3.ZIndex = 53
-		textLabel3.Parent = frame5
-		local textLabel4 = Instance.new("TextLabel")
-		textLabel4.Size = UDim2.new(1, -10, 0, 28)
-		textLabel4.Position = UDim2.new(0, 6, 0, 16)
-		textLabel4.BackgroundTransparency = 1
-		textLabel4.Text = v2.value
-		textLabel4.Font = Enum.Font.GothamBold
-		textLabel4.TextSize = v2.short and 15 or 18
-		textLabel4.TextColor3 = Color3.fromRGB(245, 245, 250)
-		textLabel4.TextXAlignment = Enum.TextXAlignment.Left
-		textLabel4.ZIndex = 53
-		textLabel4.Parent = frame5
-		local frame7 = Instance.new("Frame")
-		frame7.Size = UDim2.new(0, 6, 0, 6)
-		frame7.Position = UDim2.new(1, -12, 0, 6)
-		frame7.BackgroundColor3 = v2.accent
-		frame7.BorderSizePixel = 0
-		frame7.ZIndex = 53
-		frame7.Parent = frame5
-		fn3(frame7, 99)
-		tbl3[v2.id] = textLabel4
-	end
-end
-
-local doServerHop
-
-do
-	local frame4 = Instance.new("Frame")
-	frame4.Size = UDim2.new(1, 0, 0, 42)
-	frame4.Position = UDim2.new(0, 0, 0, 132)
-	frame4.BackgroundTransparency = 1
-	frame4.ZIndex = 51
-	frame4.Parent = frame3
-	local uiListLayout = Instance.new("UIListLayout")
-	uiListLayout.FillDirection = Enum.FillDirection.Horizontal
-	uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	uiListLayout.Padding = UDim.new(0, 12)
-	uiListLayout.Parent = frame4
-	local frame5 = Instance.new("Frame")
-	frame5.Size = UDim2.new(0.5, -6, 1, 0)
-	frame5.BackgroundTransparency = 1
-	frame5.LayoutOrder = 1
-	frame5.ZIndex = 51
-	frame5.Parent = frame4
-	local textLabel3 = Instance.new("TextLabel")
-	textLabel3.Size = UDim2.new(1, 0, 0, 12)
-	textLabel3.BackgroundTransparency = 1
-	textLabel3.Text = "REGION"
-	textLabel3.Font = Enum.Font.GothamMedium
-	textLabel3.TextSize = 9
-	textLabel3.TextColor3 = Color3.fromRGB(140, 140, 150)
-	textLabel3.TextXAlignment = Enum.TextXAlignment.Left
-	textLabel3.ZIndex = 52
-	textLabel3.Parent = frame5
-	local textButton = Instance.new("TextButton")
-	textButton.Size = UDim2.new(1, 0, 0, 26)
-	textButton.Position = UDim2.new(0, 0, 0, 14)
-	textButton.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
-	textButton.BorderSizePixel = 0
-	textButton.Text = ""
-	textButton.AutoButtonColor = false
-	textButton.ZIndex = 52
-	textButton.Parent = frame5
-	fn3(textButton, 8)
-	createUIStroke(textButton, Color3.fromRGB(80, 80, 90), 1, 0.7)
-	local textLabel4 = Instance.new("TextLabel")
-	textLabel4.Size = UDim2.new(1, -32, 1, 0)
-	textLabel4.Position = UDim2.new(0, 12, 0, 0)
-	textLabel4.BackgroundTransparency = 1
-	textLabel4.Text = v.country or "Select..."
-	textLabel4.Font = Enum.Font.Gotham
-	textLabel4.TextSize = 12
-	textLabel4.TextColor3 = Color3.fromRGB(230, 230, 235)
-	textLabel4.TextXAlignment = Enum.TextXAlignment.Left
-	textLabel4.ZIndex = 53
-	textLabel4.Parent = textButton
-	local textLabel5 = Instance.new("TextLabel")
-	textLabel5.Size = UDim2.new(0, 22, 1, 0)
-	textLabel5.Position = UDim2.new(1, -26, 0, 0)
-	textLabel5.BackgroundTransparency = 1
-	textLabel5.Text = "▾"
-	textLabel5.Font = Enum.Font.GothamBold
-	textLabel5.TextSize = 12
-	textLabel5.TextColor3 = Color3.fromRGB(140, 140, 150)
-	textLabel5.ZIndex = 53
-	textLabel5.Parent = textButton
-	local scrollingFrame = Instance.new("ScrollingFrame")
-	scrollingFrame.Size = UDim2.new(1, 0, 0, 0)
-	scrollingFrame.Position = UDim2.new(0, 0, 0, 40)
-	scrollingFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
-	scrollingFrame.BorderSizePixel = 0
-	scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-	scrollingFrame.ScrollBarThickness = 5
-	scrollingFrame.ScrollBarImageColor3 = Color3.fromRGB(140, 140, 150)
-	scrollingFrame.ClipsDescendants = true
-	scrollingFrame.Visible = false
-	scrollingFrame.ZIndex = 200
-	scrollingFrame.Parent = frame5
-	fn3(scrollingFrame, 8)
-	createUIStroke(scrollingFrame, Color3.fromRGB(80, 80, 90), 1, 0.7)
-	local uiListLayout2 = Instance.new("UIListLayout")
-	uiListLayout2.SortOrder = Enum.SortOrder.LayoutOrder
-	uiListLayout2.Parent = scrollingFrame
-	local n3 = 26
-	local flag4 = false
-
-	local function fn4()
-		flag4 = false
-		scrollingFrame.Visible = false
-		scrollingFrame.Size = UDim2.new(1, 0, 0, 0)
-		textLabel5.Text = "v"
-	end
-
-	local function fn5()
-		flag4 = true
-		scrollingFrame.Visible = true
-		textLabel5.Text = "^"
-		scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, #tbl * n3)
-		scrollingFrame.Size = UDim2.new(1, 0, 0, math.min(#tbl, 5) * n3)
-	end
-
-	textButton.MouseButton1Click:Connect(function()
-		if flag4 then
-			fn4()
-		else
-			fn5()
-		end
-	end)
-
-	for i, v2 in ipairs(tbl) do
-		local textButton2 = Instance.new("TextButton")
-		textButton2.Name = v2
-		textButton2.LayoutOrder = i
-		textButton2.Size = UDim2.new(1, 0, 0, 26)
-		textButton2.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
-		textButton2.AutoButtonColor = true
-		textButton2.Font = Enum.Font.Gotham
-		textButton2.Text = "   " .. v2
-		textButton2.TextXAlignment = Enum.TextXAlignment.Left
-		textButton2.TextColor3 = Color3.fromRGB(220, 220, 225)
-		textButton2.TextSize = 12
-		textButton2.ZIndex = 201
-		textButton2.Parent = scrollingFrame
-
-		textButton2.MouseButton1Click:Connect(function()
-			v.country = v2
-			textLabel4.Text = v2
-			fn4()
-			fn()
-		end)
-	end
-
-	local frame6 = Instance.new("Frame")
-	frame6.Size = UDim2.new(0.5, -6, 1, 0)
-	frame6.BackgroundTransparency = 1
-	frame6.LayoutOrder = 2
-	frame6.ZIndex = 51
-	frame6.Parent = frame4
-	local textLabel6 = Instance.new("TextLabel")
-	textLabel6.Size = UDim2.new(1, 0, 0, 12)
-	textLabel6.BackgroundTransparency = 1
-	textLabel6.Text = "SERVER HOP"
-	textLabel6.Font = Enum.Font.GothamMedium
-	textLabel6.TextSize = 9
-	textLabel6.TextColor3 = Color3.fromRGB(140, 140, 150)
-	textLabel6.TextXAlignment = Enum.TextXAlignment.Left
-	textLabel6.ZIndex = 52
-	textLabel6.Parent = frame6
-	local textButton2 = Instance.new("TextButton")
-	textButton2.Size = UDim2.new(1, 0, 0, 26)
-	textButton2.Position = UDim2.new(0, 0, 0, 14)
-	textButton2.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
-	textButton2.BorderSizePixel = 0
-	textButton2.Text = "Serverhop: OFF"
-	textButton2.Font = Enum.Font.GothamBold
-	textButton2.TextSize = 11
-	textButton2.TextColor3 = Color3.fromRGB(220, 220, 225)
-	textButton2.AutoButtonColor = false
-	textButton2.ZIndex = 52
-	textButton2.Parent = frame6
-	fn3(textButton2, 8)
-	createUIStroke(textButton2, Color3.fromRGB(80, 80, 90), 1, 0.7)
-	doServerHop = getgenv().DoServerHop
-
-	if doServerHop == nil then
-		doServerHop = true
-	end
-
-	local function fn6(arg)
-		doServerHop = arg
-
-		if arg then
-			textButton2.Text = "Serverhop: ON"
-			fn2(textButton2, { BackgroundColor3 = Color3.fromRGB(70, 200, 130) }, 0.18)
-		else
-			textButton2.Text = "Serverhop: OFF"
-			fn2(textButton2, { BackgroundColor3 = Color3.fromRGB(20, 20, 26) }, 0.18)
-		end
-	end
-
-	textButton2.MouseButton1Click:Connect(function()
-		fn6(not doServerHop)
-	end)
-
-	fn6(doServerHop)
-end
-
-local textButton
-
-do
-	local frame4 = Instance.new("Frame")
-	frame4.Size = UDim2.new(1, 0, 0, 30)
-	frame4.Position = UDim2.new(0, 0, 0, 180)
-	frame4.BackgroundTransparency = 1
-	frame4.ZIndex = 51
-	frame4.Parent = frame3
-	local uiListLayout = Instance.new("UIListLayout")
-	uiListLayout.FillDirection = Enum.FillDirection.Horizontal
-	uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	uiListLayout.Padding = UDim.new(0, 10)
-	uiListLayout.Parent = frame4
-	local textBox = Instance.new("TextBox")
-	textBox.Size = UDim2.new(1, -128, 1, 0)
-	textBox.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
-	textBox.BorderSizePixel = 0
-	textBox.Font = Enum.Font.Gotham
-	textBox.PlaceholderText = "https://discord.com/api/webhooks/..."
-	textBox.PlaceholderColor3 = Color3.fromRGB(120, 120, 130)
-	textBox.Text = v.webhookUrl or ""
-	textBox.TextColor3 = Color3.fromRGB(220, 220, 225)
-	textBox.TextSize = 11
-	textBox.ClearTextOnFocus = false
-	textBox.TextXAlignment = Enum.TextXAlignment.Left
-	textBox.ClipsDescendants = true
-	textBox.LayoutOrder = 1
-	textBox.ZIndex = 52
-	textBox.Parent = frame4
-	fn3(textBox, 8)
-	createUIStroke(textBox, Color3.fromRGB(80, 80, 90), 1, 0.7)
-
-	textBox:GetPropertyChangedSignal("Text"):Connect(function()
-		v.webhookUrl = textBox.Text
-		fn()
-	end)
-
-	local uiPadding = Instance.new("UIPadding")
-	uiPadding.PaddingLeft = UDim.new(0, 12)
-	uiPadding.Parent = textBox
-	textButton = Instance.new("TextButton")
-	textButton.Size = UDim2.new(0, 118, 1, 0)
-	textButton.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
-	textButton.BorderSizePixel = 0
-	textButton.Text = "Test Webhook"
-	textButton.Font = Enum.Font.GothamMedium
-	textButton.TextSize = 11
-	textButton.TextColor3 = Color3.fromRGB(220, 220, 225)
-	textButton.LayoutOrder = 2
-	textButton.ZIndex = 52
-	textButton.Parent = frame4
-end
-
+textButton = Instance.new("TextButton", frame2) 
+textButton.Size = UDim2.new(0, 120, 0, 35)
+textButton.Position = UDim2.new(0, 580, 0, 150)
+textButton.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+textButton.Text = "Test Webhook"
+textButton.TextColor3 = Color3.fromRGB(255,255,255)
+textButton.Font = Enum.Font.GothamBold
+textButton.TextSize = 12
 fn3(textButton, 8)
-createUIStroke(textButton, Color3.fromRGB(80, 80, 90), 1, 0.7)
+createUIStroke(textButton, Color3.fromRGB(80, 80, 90), 1, 0.5)
 
-textButton.MouseEnter:Connect(function()
-	fn2(textButton, { BackgroundColor3 = Color3.fromRGB(30, 30, 38) }, 0.15)
+local startBtn = Instance.new("TextButton", frame2)
+startBtn.Size = UDim2.new(1, -40, 0, 45)
+startBtn.Position = UDim2.new(0, 20, 0, 200)
+startBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 120)
+startBtn.Text = "Start Farm"
+startBtn.Font = Enum.Font.GothamBlack
+startBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+startBtn.TextSize = 18
+fn3(startBtn, 8)
+
+startBtn.MouseButton1Click:Connect(function()
+    flag3 = not flag3
+    if flag3 then
+        startBtn.Text = "Stop Farm"
+        startBtn.BackgroundColor3 = Color3.fromRGB(220, 80, 80)
+    else
+        startBtn.Text = "Start Farm"
+        startBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 120)
+    end
 end)
+if flag3 then
+    startBtn.Text = "Stop Farm"
+    startBtn.BackgroundColor3 = Color3.fromRGB(220, 80, 80)
+else
+    startBtn.Text = "Start Farm"
+    startBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 120)
+end
 
-textButton.MouseLeave:Connect(function()
-	fn2(textButton, { BackgroundColor3 = Color3.fromRGB(20, 20, 26) }, 0.15)
+local ctrlContainer = Instance.new("Frame", frame2)
+ctrlContainer.Size = UDim2.new(1, -40, 0, 40)
+ctrlContainer.Position = UDim2.new(0, 20, 0, 260)
+ctrlContainer.BackgroundTransparency = 1
+local ctrlLayout = Instance.new("UIListLayout", ctrlContainer)
+ctrlLayout.FillDirection = Enum.FillDirection.Horizontal
+ctrlLayout.Padding = UDim.new(0, 10)
+
+textButton2 = Instance.new("TextButton", ctrlContainer)
+textButton2.Size = UDim2.new(0, 220, 1, 0)
+textButton2.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+textButton2.Text = "Hop Server"
+textButton2.TextColor3 = Color3.fromRGB(255,255,255)
+textButton2.Font = Enum.Font.GothamBold
+textButton2.TextSize = 14
+fn3(textButton2, 8)
+createUIStroke(textButton2, Color3.fromRGB(80, 80, 90), 1, 0.5)
+
+local autoHopBtn = Instance.new("TextButton", ctrlContainer)
+autoHopBtn.Size = UDim2.new(0, 220, 1, 0)
+autoHopBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 120)
+autoHopBtn.Text = "Auto Hop: ON"
+autoHopBtn.TextColor3 = Color3.fromRGB(255,255,255)
+autoHopBtn.Font = Enum.Font.GothamBold
+autoHopBtn.TextSize = 14
+fn3(autoHopBtn, 8)
+
+doServerHop = getgenv().DoServerHop
+if doServerHop == nil then doServerHop = true end
+local function updateHopBtn()
+    if doServerHop then
+        autoHopBtn.Text = "Auto Hop: ON"
+        autoHopBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 120)
+    else
+        autoHopBtn.Text = "Auto Hop: OFF"
+        autoHopBtn.BackgroundColor3 = Color3.fromRGB(220, 80, 80)
+    end
+end
+autoHopBtn.MouseButton1Click:Connect(function()
+    doServerHop = not doServerHop
+    updateHopBtn()
 end)
+updateHopBtn()
 
-local fn4
+local renderBtn = Instance.new("TextButton", ctrlContainer)
+renderBtn.Size = UDim2.new(0, 220, 1, 0)
+renderBtn.BackgroundColor3 = Color3.fromRGB(220, 80, 80)
+renderBtn.Text = "Render: OFF"
+renderBtn.TextColor3 = Color3.fromRGB(255,255,255)
+renderBtn.Font = Enum.Font.GothamBold
+renderBtn.TextSize = 14
+fn3(renderBtn, 8)
+
+local renderEnabled = getgenv().renderEnabled ~= nil and getgenv().renderEnabled or false
+local function updateRenderBtn()
+    if renderEnabled then
+        renderBtn.Text = "Render: ON"
+        renderBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 120)
+        pcall(function() RunService:Set3dRenderingEnabled(true) end)
+    else
+        renderBtn.Text = "Render: OFF"
+        renderBtn.BackgroundColor3 = Color3.fromRGB(220, 80, 80)
+        pcall(function() RunService:Set3dRenderingEnabled(false) end)
+    end
+end
+renderBtn.MouseButton1Click:Connect(function()
+    renderEnabled = not renderEnabled
+    getgenv().renderEnabled = renderEnabled
+    updateRenderBtn()
+end)
+updateRenderBtn()
 
 do
-	local frame4 = Instance.new("Frame")
-	frame4.Size = UDim2.new(1, 0, 0, 34)
-	frame4.Position = UDim2.new(0, 0, 0, 218)
-	frame4.BackgroundTransparency = 1
-	frame4.ZIndex = 51
-	frame4.Parent = frame3
-	local textButton2 = Instance.new("TextButton")
-	textButton2.Size = UDim2.new(1, 0, 1, 0)
-	textButton2.BackgroundColor3 = Color3.fromRGB(220, 80, 80)
-	textButton2.BorderSizePixel = 0
-	textButton2.Text = "Stop Farm"
-	textButton2.Font = Enum.Font.GothamBold
-	textButton2.TextSize = 13
-	textButton2.TextColor3 = Color3.fromRGB(255, 255, 255)
-	textButton2.AutoButtonColor = false
-	textButton2.ZIndex = 52
-	textButton2.Parent = frame4
-	fn3(textButton2, 9)
-
-	fn4 = function(arg)
-		flag3 = arg
-
-		if arg then
-			textButton2.Text = "Stop Farm"
-			fn2(textButton2, { BackgroundColor3 = Color3.fromRGB(220, 80, 80) }, 0.2)
-		else
-			textButton2.Text = "Start Farm"
-			fn2(textButton2, { BackgroundColor3 = Color3.fromRGB(50, 200, 120) }, 0.2)
-		end
-	end
-
-	textButton2.MouseButton1Click:Connect(function()
-		fn4(not flag3)
-	end)
-
-	textButton2.MouseEnter:Connect(function()
-		if flag3 then
-			fn2(textButton2, { BackgroundColor3 = Color3.fromRGB(200, 60, 60) }, 0.15)
-		else
-			fn2(textButton2, { BackgroundColor3 = Color3.fromRGB(70, 220, 140) }, 0.15)
-		end
-	end)
-
-	textButton2.MouseLeave:Connect(function()
-		if flag3 then
-			fn2(textButton2, { BackgroundColor3 = Color3.fromRGB(220, 80, 80) }, 0.15)
-		else
-			fn2(textButton2, { BackgroundColor3 = Color3.fromRGB(50, 200, 120) }, 0.15)
-		end
-	end)
+    local uiScale = Instance.new("UIScale")
+    uiScale.Parent = frame2
+    local n3 = 0.62
+    local function fn5()
+        local currentCamera = workspace.CurrentCamera
+        if not currentCamera then return end
+        local viewportSize = currentCamera.ViewportSize
+        uiScale.Scale = math.min(viewportSize.X * n3 / n, viewportSize.Y * n3 / n2, 1)
+    end
+    fn5()
+    workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+        fn5()
+        if workspace.CurrentCamera then
+            workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fn5)
+        end
+    end)
+    if workspace.CurrentCamera then
+        workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fn5)
+    end
 end
-
-fn4(flag3)
-local textButton2
-
-do
-	local frame4 = Instance.new("Frame")
-	frame4.Size = UDim2.new(1, 0, 0, 34)
-	frame4.Position = UDim2.new(0, 0, 0, 260)
-	frame4.BackgroundTransparency = 1
-	frame4.ZIndex = 51
-	frame4.Parent = frame3
-	local uiListLayout = Instance.new("UIListLayout")
-	uiListLayout.FillDirection = Enum.FillDirection.Horizontal
-	uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	uiListLayout.Padding = UDim.new(0, 10)
-	uiListLayout.Parent = frame4
-	textButton2 = Instance.new("TextButton")
-	textButton2.Size = UDim2.new(0.66666666666666663, -5, 1, 0)
-	textButton2.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
-	textButton2.BorderSizePixel = 0
-	textButton2.Text = "Hop Server"
-	textButton2.Font = Enum.Font.GothamBold
-	textButton2.TextSize = 13
-	textButton2.TextColor3 = Color3.fromRGB(220, 220, 225)
-	textButton2.AutoButtonColor = false
-	textButton2.LayoutOrder = 1
-	textButton2.ZIndex = 52
-	textButton2.Parent = frame4
-	fn3(textButton2, 9)
-	createUIStroke(textButton2, Color3.fromRGB(80, 80, 90), 1, 0.7)
-
-	textButton2.MouseEnter:Connect(function()
-		fn2(textButton2, { BackgroundColor3 = Color3.fromRGB(35, 35, 45) }, 0.15)
-	end)
-
-	textButton2.MouseLeave:Connect(function()
-		fn2(textButton2, { BackgroundColor3 = Color3.fromRGB(25, 25, 32) }, 0.15)
-	end)
-
-	local textButton3 = Instance.new("TextButton")
-	textButton3.Size = UDim2.new(0.33333333333333331, -5, 1, 0)
-	textButton3.BackgroundColor3 = Color3.fromRGB(220, 90, 100)
-	textButton3.BorderSizePixel = 0
-	textButton3.Text = "Render: Off"
-	textButton3.Font = Enum.Font.GothamBold
-	textButton3.TextSize = 11
-	textButton3.TextColor3 = Color3.fromRGB(255, 255, 255)
-	textButton3.AutoButtonColor = false
-	textButton3.LayoutOrder = 2
-	textButton3.ZIndex = 52
-	textButton3.Parent = frame4
-	fn3(textButton3, 9)
-	local renderEnabled = getgenv().renderEnabled ~= nil and getgenv().renderEnabled or false
-
-	local function fn5(renderEnabled2)
-		renderEnabled = renderEnabled2
-		getgenv().renderEnabled = renderEnabled2
-
-		if renderEnabled2 then
-			textButton3.Text = "Render: On"
-			fn2(textButton3, { BackgroundColor3 = Color3.fromRGB(25, 25, 32) }, 0.18)
-
-			pcall(function()
-				RunService:Set3dRenderingEnabled(true)
-			end)
-		else
-			textButton3.Text = "Render: Off"
-			fn2(textButton3, { BackgroundColor3 = Color3.fromRGB(220, 90, 100) }, 0.18)
-
-			pcall(function()
-				RunService:Set3dRenderingEnabled(false)
-			end)
-		end
-	end
-
-	textButton3.MouseButton1Click:Connect(function()
-		fn5(not renderEnabled)
-	end)
-
-	fn5(getgenv().renderEnabled ~= nil and getgenv().renderEnabled or false)
-end
-
-local frame4 = Instance.new("Frame")
-frame4.Size = UDim2.new(1, 0, 0, 1)
-frame4.Position = UDim2.new(0, 0, 0, 300)
-frame4.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-frame4.BackgroundTransparency = 0.9
-frame4.BorderSizePixel = 0
-frame4.ZIndex = 51
-frame4.Parent = frame3
-local textLabel3 = Instance.new("TextLabel")
-textLabel3.Size = UDim2.new(1, 0, 0, 18)
-textLabel3.Position = UDim2.new(0, 0, 0, 306)
-textLabel3.BackgroundTransparency = 1
-textLabel3.Text = "Credit to  :  @mitthai  ·  @hzayday"
-textLabel3.Font = Enum.Font.GothamMedium
-textLabel3.TextSize = 10
-textLabel3.TextColor3 = Color3.fromRGB(255, 255, 255)
-textLabel3.TextXAlignment = Enum.TextXAlignment.Center
-textLabel3.TextScaled = false
-textLabel3.ZIndex = 51
-textLabel3.Parent = frame3
-createUIGradient(textLabel3, Color3.fromRGB(255, 150, 210), Color3.fromRGB(190, 150, 255), 0)
-
-for _, descendant in ipairs(frame2:GetDescendants()) do
-	if descendant:IsA("TextLabel") or descendant:IsA("TextButton") then
-		descendant.TextTransparency = 1
-	end
-end
-
-task.spawn(function()
-	fn2(frame, { BackgroundTransparency = 0 }, 0.5)
-	task.wait(0.05)
-	fn2(imageLabel, { ImageTransparency = 0 }, 0.4)
-	task.wait(0.15)
-	fn2(textLabel, { TextTransparency = 0 }, 0.4)
-	task.wait(0.6)
-	task.wait(0.5)
-	local v2 = fn2(frame, { BackgroundTransparency = 1 }, 0.4)
-	fn2(imageLabel, { ImageTransparency = 1 }, 0.3)
-	fn2(textLabel, { TextTransparency = 1 }, 0.3)
-	v2.Completed:Wait()
-	frame.Visible = false
-	frame2.Visible = true
-	frame2.BackgroundTransparency = 0
-	frame2.Size = UDim2.new(0, 0, 0, 0)
-	fn2(frame2, { Size = UDim2.new(0, 700, 0, 394) }, 0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-	task.wait(0.45)
-	local tbl4 = {}
-
-	for _, descendant in ipairs(frame2:GetDescendants()) do
-		if descendant:IsA("TextLabel") or descendant:IsA("TextButton") then
-			table.insert(tbl4, descendant)
-		end
-	end
-
-	for i, v3 in ipairs(tbl4) do
-		task.spawn(function()
-			task.wait((i - 1) * 0.015)
-			fn2(v3, { TextTransparency = 0 }, 0.35)
-		end)
-	end
-
-	task.wait(0.6)
-	frame:Destroy()
-end)
-
-do
-	local uiScale = Instance.new("UIScale")
-	uiScale.Parent = frame2
-	local n3 = 0.62
-
-	local function fn5()
-		local currentCamera = workspace.CurrentCamera
-		if not currentCamera then
-			return
-		end
-		local viewportSize = currentCamera.ViewportSize
-		uiScale.Scale = math.min(viewportSize.X * n3 / n, viewportSize.Y * n3 / n2, 1)
-	end
-
-	fn5()
-
-	workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
-		fn5()
-
-		if workspace.CurrentCamera then
-			workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fn5)
-		end
-	end)
-
-	if workspace.CurrentCamera then
-		workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(fn5)
-	end
-end
+-- =========================================================================
 
 local function fn5()
 	local CoreGui = game:GetService("CoreGui")
@@ -3126,10 +2398,10 @@ do
 			end
 
 			n4 = math.floor(n3 / math.max(os.time() - savedSessionStart, 1) / 3600)
-			tbl3.kills.Text = tostring(n3)
-			tbl3.kph.Text = tostring(n4)
-			tbl3.emotes.Text = tostring(savedEmotes)
-			tbl3.total.Text = tostring(n6)
+			if tbl3.kills then tbl3.kills.Text = tostring(n3) end
+			if tbl3.kph then tbl3.kph.Text = tostring(n4) end
+			if tbl3.emotes then tbl3.emotes.Text = tostring(savedEmotes) end
+			if tbl3.total then tbl3.total.Text = tostring(n6) end
 		end
 	end)
 
@@ -3141,7 +2413,7 @@ do
 			end
 
 			local timeFarmed = getgenv().TimeFarmed
-			tbl3.timer.Text = string.format("%02d:%02d:%02d", math.floor(timeFarmed / 3600), math.floor(timeFarmed % 3600 / 60), timeFarmed % 60)
+			if tbl3.timer then tbl3.timer.Text = string.format("%02d:%02d:%02d", math.floor(timeFarmed / 3600), math.floor(timeFarmed % 3600 / 60), timeFarmed % 60) end
 			task.wait(1)
 		end
 	end)
@@ -3361,7 +2633,7 @@ getgenv().renderEnabled=%s
 			end
 
 			if flag12 then
-				fn4(false)
+				flag3 = false
 				flag11 = true
 				doHopServer()
 				return
@@ -3370,7 +2642,7 @@ getgenv().renderEnabled=%s
 
 		for _, v3 in ipairs(tbl5) do
 			if arg.UserId == v3 then
-				fn4(false)
+				flag3 = false
 				flag11 = true
 				doHopServer()
 				return
@@ -3406,7 +2678,7 @@ getgenv().renderEnabled=%s
 		end
 
 		if #tbl6 > 0 then
-			fn4(false)
+			flag3 = false
 			flag11 = true
 			doHopServer()
 			return
