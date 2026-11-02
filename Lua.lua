@@ -286,7 +286,7 @@ local TweenService
 TweenService = game:GetService("TweenService")
 local RunService
 RunService = game:GetService("RunService")
-local flag2 = true -- Đã mở khóa sẵn bản Premium sau khi bỏ Key
+local flag2 = true
 
 task.spawn(function()
 	local tbl = { "ParticleEmitter", "Trail", "Beam", "Fire", "Smoke", "Sparkles", "Explosion", "Sound" }
@@ -336,7 +336,7 @@ task.spawn(function()
 		fn2(v)
 	end
 
-	print("[zkayreal] Super Fix Lag Activated!")
+	print("[hzayday vip] Super Fix Lag Activated!")
 end)
 
 local tbl
@@ -376,12 +376,12 @@ HttpService = game:GetService("HttpService")
 local v, fn
 
 do
-	local str = "ZKAYHub/PublicFarm/" .. game:GetService("Players").LocalPlayer.Name
+	local str = "hzayday_vip/PublicFarm/" .. game:GetService("Players").LocalPlayer.Name
 	local str2 = str .. "/settings.json"
 
 	local function fn2()
-		if not isfolder("ZKAYHub") then
-			makefolder("ZKAYHub")
+		if not isfolder("hzayday_vip") then
+			makefolder("hzayday_vip")
 		end
 
 		if not isfolder(str) then
@@ -398,7 +398,7 @@ do
 		if ok then
 			writefile(str2, result)
 		else
-			warn("[Project Yielding] Failed to encode settings:", result)
+			warn("[hzayday vip] Failed to encode settings:", result)
 		end
 	end
 
@@ -409,12 +409,12 @@ do
 		end
 		local ok, result = pcall(readfile, str2)
 		if not ok then
-			warn("[Project Yielding] Failed to read settings file:", result)
+			warn("[hzayday vip] Failed to read settings file:", result)
 			return
 		end
 		local ok2, result2 = pcall(HttpService.JSONDecode, HttpService, result)
 		if not ok2 or type(result2) ~= "table" then
-			warn("[Project Yielding] Failed to decode settings file, using defaults")
+			warn("[hzayday vip] Failed to decode settings file, using defaults")
 			return
 		end
 
@@ -465,14 +465,18 @@ createUIStroke = function(parent, color, thickness, transparency)
 	return uiStroke
 end
 
+-- ========================================================
+-- [hzayday vip] - 3D GUI ENHANCEMENT BY ARUARU
+-- ========================================================
 local frame, imageLabel, textLabel, n, n2, frame2
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "ProjectYieldingUI"
+screenGui.Name = "hzayday_vip_3D_UI"
 screenGui.ResetOnSpawn = false
 screenGui.DisplayOrder = 999
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 screenGui.IgnoreGuiInset = true
 screenGui.Parent = game.CoreGui
+
 frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 300, 0, 300)
 frame.Position = UDim2.new(0.5, -150, 0.5, -150)
@@ -482,20 +486,22 @@ frame.BorderSizePixel = 0
 frame.ZIndex = 100
 frame.Parent = screenGui
 fn3(frame, 20)
+
 imageLabel = Instance.new("ImageLabel")
 imageLabel.Size = UDim2.new(0, 150, 0, 150)
 imageLabel.Position = UDim2.new(0.5, -75, 0.5, -100)
 imageLabel.BackgroundTransparency = 1
-imageLabel.Image = "rbxassetid://106684108388970"
+imageLabel.Image = "rbxassetid://138691340576184"
 imageLabel.ImageTransparency = 1
 imageLabel.ZIndex = 101
 imageLabel.Parent = frame
 fn3(imageLabel, 20)
+
 textLabel = Instance.new("TextLabel")
 textLabel.Size = UDim2.new(0, 300, 0, 50)
 textLabel.Position = UDim2.new(0.5, -150, 0.5, 70)
 textLabel.BackgroundTransparency = 1
-textLabel.Text = "Project Yielding"
+textLabel.Text = "hzayday vip"
 textLabel.Font = Enum.Font.GothamBold
 textLabel.TextSize = 28
 textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -503,14 +509,55 @@ textLabel.TextTransparency = 1
 textLabel.ZIndex = 101
 textLabel.Parent = frame
 createUIGradient(textLabel, Color3.fromRGB(255, 150, 200), Color3.fromRGB(255, 255, 255), 0)
+
 n = 700
 n2 = 394
+
+-- 3D LAYERS
+local shadowFrame = Instance.new("Frame")
+shadowFrame.Name = "ShadowLayer"
+shadowFrame.Size = UDim2.new(0, 720, 0, 414)
+shadowFrame.Position = UDim2.new(0.5, 0, 0.5, 10)
+shadowFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+shadowFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+shadowFrame.BackgroundTransparency = 0.5
+shadowFrame.BorderSizePixel = 0
+shadowFrame.ZIndex = 40
+shadowFrame.Visible = false
+shadowFrame.Parent = screenGui
+fn3(shadowFrame, 20)
+
+local dropShadow = Instance.new("ImageLabel")
+dropShadow.Name = "DropShadow"
+dropShadow.Size = UDim2.new(1, 40, 1, 40)
+dropShadow.Position = UDim2.new(0.5, 0, 0.5, 0)
+dropShadow.AnchorPoint = Vector2.new(0.5, 0.5)
+dropShadow.BackgroundTransparency = 1
+dropShadow.Image = "rbxassetid://1316045217"
+dropShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+dropShadow.ImageTransparency = 0.4
+dropShadow.ZIndex = 39
+dropShadow.Parent = shadowFrame
+
+local bottom3D = Instance.new("Frame")
+bottom3D.Name = "Bottom3DLayer"
+bottom3D.Size = UDim2.new(0, 700, 0, 394)
+bottom3D.Position = UDim2.new(0.5, 0, 0.5, 6)
+bottom3D.AnchorPoint = Vector2.new(0.5, 0.5)
+bottom3D.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+bottom3D.BorderSizePixel = 0
+bottom3D.ZIndex = 45
+bottom3D.Visible = false
+bottom3D.Parent = screenGui
+fn3(bottom3D, 18)
+createUIStroke(bottom3D, Color3.fromRGB(40, 40, 50), 2, 0)
+
 frame2 = Instance.new("Frame")
 frame2.Name = "Sigma"
 frame2.Size = UDim2.new(0, 700, 0, 394)
 frame2.Position = UDim2.new(0.5, 0, 0.5, 0)
 frame2.AnchorPoint = Vector2.new(0.5, 0.5)
-frame2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+frame2.BackgroundColor3 = Color3.fromRGB(26, 27, 34)
 frame2.BackgroundTransparency = 0
 frame2.BorderSizePixel = 0
 frame2.Active = true
@@ -521,14 +568,89 @@ frame2.Visible = false
 frame2.Parent = screenGui
 fn3(frame2, 18)
 
+local highlightStroke = createUIStroke(frame2, Color3.fromRGB(255, 255, 255), 1, 0)
+local highlightGradient = createUIGradient(highlightStroke, Color3.fromRGB(80, 180, 255), Color3.fromRGB(255, 100, 200), 45)
+
+local UserInputService = game:GetService("UserInputService")
+local maxTilt = 5
+
+RunService.RenderStepped:Connect(function()
+	if not frame2.Parent or not frame2.Visible then return end
+	
+	shadowFrame.Visible = true
+	bottom3D.Visible = true
+
+	-- Sync position to frame2 (so dragging works flawlessly)
+	local posX = frame2.Position.X
+	local posY = frame2.Position.Y
+	
+	shadowFrame.Position = UDim2.new(posX.Scale, posX.Offset, posY.Scale, posY.Offset + 10)
+	bottom3D.Position = UDim2.new(posX.Scale, posX.Offset, posY.Scale, posY.Offset + 6)
+
+	if frame2.Size.X.Offset < 700 then
+		shadowFrame.Size = UDim2.new(0, frame2.Size.X.Offset + 20, 0, frame2.Size.Y.Offset + 20)
+		bottom3D.Size = frame2.Size
+	else
+		shadowFrame.Size = UDim2.new(0, 720, 0, 414)
+		bottom3D.Size = UDim2.new(0, 700, 0, 394)
+	end
+
+	local currentCamera = workspace.CurrentCamera
+	if not currentCamera then return end
+	local mousePos = UserInputService:GetMouseLocation()
+	local viewport = currentCamera.ViewportSize
+	local center = viewport / 2
+	
+	local offset = Vector2.new(
+		math.clamp((mousePos.X - center.X) / center.X, -1, 1),
+		math.clamp((mousePos.Y - center.Y) / center.Y, -1, 1)
+	)
+	
+	local tiltInfo = TweenInfo.new(0.3, Enum.EasingStyle.Sine, Enum.EasingDirection.Out)
+	
+	-- Rotate elements based on mouse position to create 3D tilt
+	TweenService:Create(frame2, tiltInfo, { Rotation = offset.X * maxTilt }):Play()
+	TweenService:Create(bottom3D, tiltInfo, { Rotation = offset.X * maxTilt }):Play()
+	TweenService:Create(shadowFrame, tiltInfo, { Rotation = offset.X * maxTilt * 0.5 }):Play()
+end)
+
+-- Hiệu ứng Hạt bụi lấp lánh (Particles)
+task.spawn(function()
+	while frame2.Parent do
+		if frame2.Visible then
+			local particle = Instance.new("Frame")
+			particle.Size = UDim2.new(0, math.random(2, 6), 0, math.random(2, 6))
+			particle.Position = UDim2.new(math.random(), 0, 1.2, 0)
+			particle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			particle.BackgroundTransparency = math.random(4, 8) / 10
+			particle.ZIndex = 51
+			fn3(particle, 10)
+			particle.Parent = frame2
+
+			local speed = math.random(3, 7)
+			local tween = TweenService:Create(particle, TweenInfo.new(speed, Enum.EasingStyle.Linear), {
+				Position = UDim2.new(math.random(), 0, -0.2, 0),
+				BackgroundTransparency = 1,
+				Rotation = math.random(-180, 180)
+			})
+			tween:Play()
+			
+			tween.Completed:Connect(function()
+				particle:Destroy()
+			end)
+		end
+		task.wait(math.random(1, 4) / 10)
+	end
+end)
+
 do
 	local uiGradient = Instance.new("UIGradient")
 	local colorSequence = ColorSequence.new
 	local tbl3 = {}
 	local v2 = ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0))
-	local v3 = ColorSequenceKeypoint.new(0.35, Color3.fromRGB(0, 0, 0))
-	local v4 = ColorSequenceKeypoint.new(0.5, Color3.fromRGB(48, 48, 58))
-	local v5 = ColorSequenceKeypoint.new(0.65, Color3.fromRGB(0, 0, 0))
+	local v3 = ColorSequenceKeypoint.new(0.35, Color3.fromRGB(10, 10, 15))
+	local v4 = ColorSequenceKeypoint.new(0.5, Color3.fromRGB(38, 38, 48))
+	local v5 = ColorSequenceKeypoint.new(0.65, Color3.fromRGB(10, 10, 15))
 	local new = ColorSequenceKeypoint.new
 	local color = Color3.fromRGB
 	tbl3[1] = v2
@@ -568,7 +690,7 @@ do
 	local imageLabel2 = Instance.new("ImageLabel")
 	imageLabel2.Size = UDim2.new(0, 28, 0, 28)
 	imageLabel2.BackgroundTransparency = 1
-	imageLabel2.Image = "rbxassetid://106684108388970"
+	imageLabel2.Image = "rbxassetid://138691340576184"
 	imageLabel2.ZIndex = 52
 	imageLabel2.Parent = frame3
 	fn3(imageLabel2, 8)
@@ -576,14 +698,22 @@ do
 	textLabel2.Size = UDim2.new(0, 140, 0, 16)
 	textLabel2.Position = UDim2.new(0, 36, 0, 6)
 	textLabel2.BackgroundTransparency = 1
-	textLabel2.Text = "Project Yielding"
+	textLabel2.Text = "hzayday vip [3D]"
 	textLabel2.Font = Enum.Font.GothamBold
 	textLabel2.TextSize = 12
 	textLabel2.TextColor3 = Color3.fromRGB(255, 255, 255)
 	textLabel2.TextXAlignment = Enum.TextXAlignment.Left
 	textLabel2.ZIndex = 52
 	textLabel2.Parent = frame3
-	createUIGradient(textLabel2, Color3.fromRGB(255, 140, 200), Color3.fromRGB(255, 255, 255), 0)
+	createUIGradient(textLabel2, Color3.fromRGB(255, 140, 200), Color3.fromRGB(140, 220, 255), 0)
+	
+	-- Drop shadow cho Title 3D
+	local titleShadow = textLabel2:Clone()
+	titleShadow.TextColor3 = Color3.fromRGB(0, 0, 0)
+	titleShadow.Position = UDim2.new(0, 2, 0, 8)
+	titleShadow.ZIndex = 51
+	titleShadow.Parent = frame3
+	titleShadow:ClearAllChildren()
 end
 
 local frame3
@@ -597,7 +727,7 @@ local textLabel2 = Instance.new("TextLabel")
 textLabel2.Size = UDim2.new(1, 0, 0, 30)
 textLabel2.Position = UDim2.new(0, 0, 0, 0)
 textLabel2.BackgroundTransparency = 1
-textLabel2.Text = "Suiryu Farm"
+textLabel2.Text = "VIP panel"
 textLabel2.Font = Enum.Font.GothamBold
 textLabel2.TextSize = 24
 textLabel2.TextColor3 = Color3.fromRGB(255, 200, 60)
@@ -1223,7 +1353,7 @@ local textLabel3 = Instance.new("TextLabel")
 textLabel3.Size = UDim2.new(1, 0, 0, 18)
 textLabel3.Position = UDim2.new(0, 0, 0, 306)
 textLabel3.BackgroundTransparency = 1
-textLabel3.Text = "Credit to  :  @zkayreal (Script Owner)  ·  @dev.nox (Architect)"
+textLabel3.Text = "Credit to  :  @mitthai  ·  @hzayday"
 textLabel3.Font = Enum.Font.GothamMedium
 textLabel3.TextSize = 10
 textLabel3.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1407,7 +1537,7 @@ do
 		local tbl4 = {
 			embeds = {
 				{
-					title = "Project Yielding Public Farm",
+					title = "hzayday vip Public Farm",
 					color = 0,
 					description = string.format([[**User:** ||%s||
 **Kills farmed:** %s
@@ -1519,7 +1649,7 @@ do
 		folder.Name = "MovingExclusion"
 
 		pcall(function()
-			folder:SetAttribute("ZKAYOwned", true)
+			folder:SetAttribute("hzaydayOwned", true)
 		end)
 
 		folder.Parent = parent
@@ -3023,7 +3153,7 @@ do
 		character:GetAttributeChangedSignal("Ulted"):Connect(function()
 			if localPlayer.Character:GetAttribute("Ulted") then
 				n8 += 1
-				print("[Project Yielding] Ulted detected, time ulted: " .. tostring(n8))
+				print("[hzayday vip] Ulted detected, time ulted: " .. tostring(n8))
 			end
 		end)
 	end)
@@ -3034,7 +3164,7 @@ do
 		localPlayer.Character:GetAttributeChangedSignal("Ulted"):Connect(function()
 			if localPlayer.Character:GetAttribute("Ulted") then
 				n8 += 1
-				print("[Project Yielding] Ulted detected, time ulted: " .. tostring(n8))
+				print("[hzayday vip] Ulted detected, time ulted: " .. tostring(n8))
 			end
 		end)
 	end
@@ -3124,12 +3254,12 @@ getgenv().renderEnabled=%s
 		flag = false
 
 		if flag11 then
-			localPlayer:Kick("[Project Yielding] Kicked by force-hop system.")
+			localPlayer:Kick("[hzayday vip] Kicked by force-hop system.")
 		end
 
 		task.spawn(function()
 			while true do
-				print("[Project Yielding] Hopping ...")
+				print("[hzayday vip] Hopping ...")
 
 				if not flag11 then
 					response = game:GetService("ReplicatedStorage"):WaitForChild("Ranked"):WaitForChild("GetServerBrowserData"):InvokeServer(unpack(tbl4))
@@ -3161,7 +3291,7 @@ getgenv().renderEnabled=%s
 	end
 
 	textButton2.MouseButton1Click:Connect(function()
-		print("[Project Yielding] Hop server manually...")
+		print("[hzayday vip] Hop server manually...")
 		flag10 = true
 		doHopServer()
 	end)
@@ -5594,7 +5724,7 @@ do
 			end
 
 			if not flag4 then
-				print("[Project Yielding] Targeting: " .. v2.Name)
+				print("[hzayday vip] Targeting: " .. v2.Name)
 				flag4 = true
 				humanoid2.AutoRotate = false
 			end
